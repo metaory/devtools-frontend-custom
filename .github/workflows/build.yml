@@ -24,7 +24,8 @@ jobs:
           path: ${{ runner.temp }}/devtools-work
           key: gclient-${{ hashFiles('upstream', 'scripts/build.sh') }}
 
-      - run: scripts/build.sh
+      - id: build
+        run: scripts/build.sh
         env:
           WORK: ${{ runner.temp }}/devtools-work
           ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
@@ -37,5 +38,5 @@ jobs:
 
       - run: |
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
-            tag -a -f nightly "$GITHUB_SHA" -m "$(< upstream)"
+            tag -a -f nightly "$GITHUB_SHA" -m "$(< upstream) ${{ steps.build.outputs.chrome }}"
           git push -f origin refs/tags/nightly

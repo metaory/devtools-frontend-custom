@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 trap 'printf "failed: %s (line %s)\n" "$BASH_COMMAND" "$LINENO" >&2' ERR
 
-need() {
+function need {
   ls -l "$1"
   test -x "$1"
   "$1" --version
@@ -10,7 +11,11 @@ need() {
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 work="${WORK:-$(mktemp -d "${RUNNER_TEMP:-/tmp}/devtools-custom.XXXXXX")}"
-revision="$(< "$root/upstream")"
+revision="$(<"$root/upstream")"
+
+export PATH="$work/depot_tools:$PATH"
+export DEPOT_TOOLS_UPDATE=0
+
 readonly root work revision
 readonly artifact="${ARTIFACT:-${RUNNER_TEMP:-$PWD}/devtools-frontend.tar.zst}"
 readonly upstream_url='https://github.com/ChromeDevTools/devtools-frontend'
@@ -20,50 +25,52 @@ readonly tokens="$source_dir/front_end/design_system_tokens.css"
 
 mkdir -p "$work/devtools" "$(dirname -- "$artifact")"
 
-if [[ ! -x $work/depot_tools/gclient ]]; then
-  git clone --depth=1 "$depot_url" "$work/depot_tools"
-fi
-export PATH="$work/depot_tools:$PATH"
-export DEPOT_TOOLS_UPDATE=0
+[[ ! -x $work/depot_tools/gclient ]] && git clone --depth=1 "$depot_url" "$work/depot_tools"
+
 gclient help >/dev/null
 cipd version
 
-if [[ ! -d $source_dir/.git ]]; then
-  git clone --filter=blob:none "$upstream_url" "$source_dir"
-fi
-if ! git -C "$source_dir" cat-file -e "$revision^{commit}"; then
-  git -C "$source_dir" fetch --filter=blob:none origin "$revision"
-fi
+[[ ! -d $source_dir/.git ]] && git clone --filter=blob:none "$upstream_url" "$source_dir"
+
+! git -C "$source_dir" cat-file -e "$revision^{commit}" && git -C "$source_dir" fetch --filter=blob:none origin "$revision"
+
 git -C "$source_dir" checkout --detach --force "$revision"
 
-if [[ ! -f $work/devtools/.gclient ]]; then
-  (
-    cd "$work/devtools"
-    gclient config "$upstream_url" --unmanaged
-  )
-fi
+chrome="$(sed -n "s/^ *'chrome': '\([^']*\)'.*/\1/p" "$source_dir/DEPS")"
+
+printf 'chromium %s\n' "$chrome"
+
+[[ -n ${GITHUB_OUTPUT-} ]] && printf 'chrome=%s\n' "$chrome" >>"$GITHUB_OUTPUT"
+
+[[ ! -f $work/devtools/.gclient ]] && (
+  cd "$work/devtools"
+  gclient config "$upstream_url" --unmanaged
+)
 
 (
   cd "$source_dir"
-  gclient sync -v
 
+  gclient sync -v
   python3 --version
+
   need buildtools/linux64/gn
   need third_party/ninja/ninja
   need third_party/node/linux/node-linux-x64/bin/node
 
   test -f "$tokens"
-  printf '\n/* xcrx proof theme */\n' >> "$tokens"
-  cat "$root/theme.css" >> "$tokens"
-  grep -F -- '--xcrx-theme: proof' "$tokens"
+
+  cat "$root/theme.css" >>"$tokens"
 
   buildtools/linux64/gn gen out/Default
   third_party/ninja/ninja -C out/Default
 
   test -s out/Default/gen/front_end/inspector.html
+
   du -sh out/Default/gen/front_end
+
   tar -C out/Default/gen -caf "$artifact" front_end -C "$source_dir" LICENSE
 )
 
 tar -taf "$artifact" >/dev/null
+
 printf 'Artifact: %s\nWorkspace: %s\n' "$artifact" "$work"

@@ -1,5 +1,4 @@
 :root {
-  --xcrx-theme: proof;
   --sys-color-cdt-base-container: oklch(96% 0.06 315);
   --sys-color-cdt-base: oklch(91% 0.12 300);
   --sys-color-surface: oklch(98% 0.03 315);
@@ -18,8 +17,10 @@
   --sys-color-state-focus-select: oklch(72% 0.24 190);
 
   &.theme-with-dark-background {
-    --sys-color-cdt-base-container: oklch(17% 0.09 285);
-    --sys-color-cdt-base: oklch(13% 0.08 285);
+    /* --sys-color-cdt-base-container: oklch(17% 0.09 285); */
+    /* --sys-color-cdt-base: oklch(13% 0.08 285); */
+    --sys-color-cdt-base-container: #4411aa;
+    --sys-color-cdt-base: #331144;
     --sys-color-surface: oklch(14% 0.07 285);
     --sys-color-surface1: oklch(22% 0.11 290);
     --sys-color-surface2: oklch(26% 0.15 295);

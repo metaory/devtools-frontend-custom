@@ -38,16 +38,8 @@ cipd version
 ! git -C "$source_dir" cat-file -e "$revision^{commit}" && git -C "$source_dir" fetch --depth=1 origin "$revision"
 
 head="$(git -C "$source_dir" rev-parse HEAD 2>/dev/null || true)"
-
+[[ $head == "$revision" ]] && git -C "$source_dir" checkout -- front_end/design_system_tokens.css
 [[ $head == "$revision" ]] || git -C "$source_dir" checkout --detach --force "$revision"
-
-hash="$(sha256sum "$root/theme.css")"
-hash="${hash%% *}"
-skip_ninja=
-
-[[ -s $source_dir/out/Default/gen/front_end/inspector.html && -f $work/.theme && $(<"$work/.theme") == "$hash" ]] && skip_ninja=1
-
-[[ $head == "$revision" && -z $skip_ninja ]] && git -C "$source_dir" checkout -- front_end/design_system_tokens.css
 
 chrome="$(sed -n "s/^ *'chrome': '\([^']*\)'.*/\1/p" "$source_dir/DEPS")"
 
@@ -73,14 +65,10 @@ printf 'chromium %s\n' "$chrome"
   need third_party/node/linux/node-linux-x64/bin/node
 
   test -f "$tokens"
+  cat "$root/theme.css" >>"$tokens"
 
-  [[ $skip_ninja ]] && echo 'skip ninja'
-  [[ $skip_ninja ]] || {
-    cat "$root/theme.css" >>"$tokens"
-    buildtools/linux64/gn gen out/Default
-    third_party/ninja/ninja -C out/Default
-    printf '%s\n' "$hash" >"$work/.theme"
-  }
+  buildtools/linux64/gn gen out/Default
+  third_party/ninja/ninja -C out/Default
 
   test -s out/Default/gen/front_end/inspector.html
 

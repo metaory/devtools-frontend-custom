@@ -35,8 +35,8 @@ The workflow never builds a moving branch.
 CI restores `$WORK` from `actions/cache`, keyed on `upstream` and
 `scripts/build.sh`. Theme-only edits still hit. The script skips clone,
 `gclient config`, and `gclient sync` when those already exist. If the pin is
-already checked out it only resets the token file. If `theme.css` matches a
-stamp in `$WORK` and `inspector.html` already exists, ninja is skipped.
+already checked out it only resets the token file, then appends `theme.css`
+and runs ninja so the new palette is compiled.
 
 The script performs these steps in a new temporary workspace:
 

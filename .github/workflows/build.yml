@@ -11,50 +11,31 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
-    env:
-      WORK: ${{ runner.temp }}/devtools-work
-      ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
 
     steps:
-      - name: Checkout customization
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
 
-      - name: Select Python
-        uses: actions/setup-python@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 
-      - name: Inspect runner
-        run: |
-          lsb_release -ds
-          git --version
-          python3 --version
-          tar --version
-          zstd --version
-          df -h /
-
-      - name: Restore gclient tree
-        uses: actions/cache@v6
+      - uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/devtools-work
           key: gclient-${{ hashFiles('upstream', 'scripts/build.sh') }}
 
-      - name: Build frontend
-        run: scripts/build.sh
+      - run: scripts/build.sh
+        env:
+          WORK: ${{ runner.temp }}/devtools-work
+          ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
 
-      - name: Inspect result
-        run: |
-          df -h /
-          ls -lh "$ARTIFACT"
-
-      - name: Upload frontend
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           archive: false
           if-no-files-found: error
           path: ${{ runner.temp }}/devtools-frontend.tar.zst
 
-      - name: Publish tag
-        run: |
-          git tag -f nightly "$GITHUB_SHA"
+      - run: |
+          git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
+            tag -a -f nightly "$GITHUB_SHA" -m "$(< upstream)"
           git push -f origin refs/tags/nightly

@@ -106,8 +106,9 @@ Primary tokens:
 ## Run
 
 `.github/workflows/build.yml` runs on push and on manual dispatch. It uploads
-`devtools-frontend.tar.zst` as a workflow artifact and force-pushes tag
-`nightly`. That tag is not a GitHub Release. Create a release from `nightly`
+`devtools-frontend.tar.zst` as a workflow artifact and force-pushes annotated
+tag `nightly` with the upstream pin as the message. That tag is not a GitHub
+Release. Create a release from `nightly`
 in the GitHub UI when you want to publish, and attach the workflow artifact
 there.
 

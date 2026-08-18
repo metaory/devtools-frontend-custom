@@ -12,7 +12,7 @@ GitHub Actions uses:
 - system Git
 - current `depot_tools`
 - Node, GN, Ninja, and build tools provisioned by `gclient sync`
-- `WORK=$RUNNER_TEMP/devtools-work` so `actions/cache` can restore the gclient tree
+- `WORK=$RUNNER_TEMP/devtools-work` so `actions/cache` can restore the build tree
 
 See [libs.md](libs.md) for ownership and verification details.
 

@@ -22,7 +22,7 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/devtools-work
-          key: gclient-${{ hashFiles('upstream', 'scripts/build.sh') }}
+          key: work-${{ hashFiles('upstream', 'scripts/build.sh') }}
 
       - id: build
         run: scripts/build.sh

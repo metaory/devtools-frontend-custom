@@ -34,8 +34,8 @@ GitHub Actions / Ubuntu 22.04
 ---
 
 gclient sync
-gn gen out/Default
-autoninja -C out/Default
+buildtools/linux64/gn gen out/Default
+third_party/ninja/ninja -C out/Default
 
 ---
 

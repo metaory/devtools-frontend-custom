@@ -48,8 +48,8 @@ git -C "$source_dir" checkout --detach "$revision"
   cat "$root/theme.css" >> "$tokens"
   grep -F -- '--xcrx-theme: proof' "$tokens"
 
-  gn gen out/Default
-  autoninja -C out/Default
+  buildtools/linux64/gn gen out/Default
+  third_party/ninja/ninja -C out/Default
 
   test -s out/Default/gen/front_end/inspector.html
   du -sh out/Default/gen/front_end

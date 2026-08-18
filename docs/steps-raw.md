@@ -58,12 +58,13 @@ git -C devtools/devtools-frontend checkout --detach "$revision"
 cd devtools/devtools-frontend
 gclient sync -v
 cat /path/to/custom/theme.css >> front_end/design_system_tokens.css
-gn gen out/Default
-autoninja -C out/Default
+buildtools/linux64/gn gen out/Default
+third_party/ninja/ninja -C out/Default
 ```
 
-Current upstream `npm run build` wraps the same GN initialization and
-autoninja build. They are explicit here so each failure retains its native log.
+PATH `gn` and `autoninja` are depot_tools wrappers. They need a bootstrapped
+hermetic Python that `DEPOT_TOOLS_UPDATE=0` does not create. The CIPD
+binaries from `gclient sync` are the ones that actually compile.
 
 The generated frontend is:
 

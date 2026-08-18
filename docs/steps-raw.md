@@ -98,7 +98,7 @@ Primary tokens:
 
 ## Run
 
-Trigger `.github/workflows/build.yml` manually. It uploads
+`.github/workflows/build.yml` runs on push and on manual dispatch. It uploads
 `devtools-frontend.tar.zst` directly as the workflow artifact.
 
 For a local build:

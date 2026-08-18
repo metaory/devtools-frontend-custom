@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'printf "failed: %s (line %s)\n" "$BASH_COMMAND" "$LINENO" >&2' ERR
+
+need() {
+  ls -l "$1"
+  test -x "$1"
+  "$1" --version
+}
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 work="$(mktemp -d "${RUNNER_TEMP:-/tmp}/devtools-custom.XXXXXX")"
@@ -31,16 +38,15 @@ git -C "$source_dir" checkout --detach "$revision"
   cd "$source_dir"
   gclient sync -v
 
-  test -x buildtools/linux64/gn/gn
-  test -x third_party/ninja/ninja
-  test -x third_party/node/linux/node-linux-x64/bin/node
   python3 --version
-  buildtools/linux64/gn/gn --version
-  third_party/ninja/ninja --version
-  third_party/node/linux/node-linux-x64/bin/node --version
+  need buildtools/linux64/gn
+  need third_party/ninja/ninja
+  need third_party/node/linux/node-linux-x64/bin/node
 
+  test -f "$tokens"
   printf '\n/* xcrx proof theme */\n' >> "$tokens"
   cat "$root/theme.css" >> "$tokens"
+  grep -F -- '--xcrx-theme: proof' "$tokens"
 
   gn gen out/Default
   autoninja -C out/Default

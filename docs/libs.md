@@ -11,7 +11,7 @@ upstream owns its build tool versions through `DEPS` and `gclient sync`.
 | depot_tools | build script | current upstream checkout | `gclient help` |
 | CIPD | depot_tools | bundled client | `cipd version` |
 | Node.js | upstream DEPS | pinned download from `gclient sync` | `third_party/node/linux/node-linux-x64/bin/node --version` |
-| GN | upstream DEPS | pinned CIPD package from `gclient sync` | `buildtools/linux64/gn/gn --version` |
+| GN | upstream DEPS | pinned CIPD package from `gclient sync` | `buildtools/linux64/gn --version` |
 | Ninja | upstream DEPS | pinned CIPD package from `gclient sync` | `third_party/ninja/ninja --version` |
 | Clang and toolchains | upstream DEPS | provisioned only when required | no host installation |
 | GNU tar | runner | system package | `tar --version` |

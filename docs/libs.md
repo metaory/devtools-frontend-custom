@@ -17,6 +17,7 @@ upstream owns its build tool versions through `DEPS` and `gclient sync`.
 | GNU tar | runner | system package | `tar --version` |
 | Zstandard | runner | system package | `zstd --version` |
 | Network | runner | outbound HTTPS | GitHub, googlesource, GCS, and CIPD endpoints |
+| gclient tree cache | workflow | `actions/cache`, keyed by `upstream` + `scripts/build.sh` | cache hit log on Restore gclient tree |
 | Docker | none | deferred | not used in Phase 1 |
 
 Do not install Node, GN, Ninja, or Clang separately. Host copies can silently

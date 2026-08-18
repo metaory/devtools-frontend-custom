@@ -11,6 +11,9 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
+    env:
+      WORK: ${{ runner.temp }}/devtools-work
+      ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
 
     steps:
       - name: Checkout customization
@@ -30,13 +33,19 @@ jobs:
           zstd --version
           df -h /
 
+      - name: Restore gclient tree
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/devtools-work
+          key: gclient-${{ hashFiles('upstream', 'scripts/build.sh') }}
+
       - name: Build frontend
         run: scripts/build.sh
 
       - name: Inspect result
         run: |
           df -h /
-          ls -lh "$RUNNER_TEMP/devtools-frontend.tar.zst"
+          ls -lh "$ARTIFACT"
 
       - name: Upload frontend
         uses: actions/upload-artifact@v7

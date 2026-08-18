@@ -9,7 +9,7 @@ need() {
 }
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-work="$(mktemp -d "${RUNNER_TEMP:-/tmp}/devtools-custom.XXXXXX")"
+work="${WORK:-$(mktemp -d "${RUNNER_TEMP:-/tmp}/devtools-custom.XXXXXX")}"
 revision="$(< "$root/upstream")"
 readonly root work revision
 readonly artifact="${ARTIFACT:-${RUNNER_TEMP:-$PWD}/devtools-frontend.tar.zst}"
@@ -20,19 +20,28 @@ readonly tokens="$source_dir/front_end/design_system_tokens.css"
 
 mkdir -p "$work/devtools" "$(dirname -- "$artifact")"
 
-git clone --depth=1 "$depot_url" "$work/depot_tools"
+if [[ ! -x $work/depot_tools/gclient ]]; then
+  git clone --depth=1 "$depot_url" "$work/depot_tools"
+fi
 export PATH="$work/depot_tools:$PATH"
 export DEPOT_TOOLS_UPDATE=0
 gclient help >/dev/null
 cipd version
 
-git clone --filter=blob:none "$upstream_url" "$source_dir"
-git -C "$source_dir" checkout --detach "$revision"
+if [[ ! -d $source_dir/.git ]]; then
+  git clone --filter=blob:none "$upstream_url" "$source_dir"
+fi
+if ! git -C "$source_dir" cat-file -e "$revision^{commit}"; then
+  git -C "$source_dir" fetch --filter=blob:none origin "$revision"
+fi
+git -C "$source_dir" checkout --detach --force "$revision"
 
-(
-  cd "$work/devtools"
-  gclient config "$upstream_url" --unmanaged
-)
+if [[ ! -f $work/devtools/.gclient ]]; then
+  (
+    cd "$work/devtools"
+    gclient config "$upstream_url" --unmanaged
+  )
+fi
 
 (
   cd "$source_dir"

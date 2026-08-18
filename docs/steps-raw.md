@@ -12,6 +12,7 @@ GitHub Actions uses:
 - system Git
 - current `depot_tools`
 - Node, GN, Ninja, and build tools provisioned by `gclient sync`
+- `WORK=$RUNNER_TEMP/devtools-work` so `actions/cache` can restore the gclient tree
 
 See [libs.md](libs.md) for ownership and verification details.
 
@@ -30,6 +31,11 @@ revision=$(< upstream)
 The workflow never builds a moving branch.
 
 ## Build pipeline
+
+CI restores `$WORK` from `actions/cache`, keyed on `upstream` and
+`scripts/build.sh`. Theme-only edits still hit. The script skips clone and
+`gclient config` when those already exist, force-checkouts the pin so a
+cached token file cannot leak, then runs `gclient sync` and ninja.
 
 The script performs these steps in a new temporary workspace:
 

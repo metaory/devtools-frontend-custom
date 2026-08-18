@@ -1,0 +1,45 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout customization
+        uses: actions/checkout@v7
+
+      - name: Select Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Inspect runner
+        run: |
+          lsb_release -ds
+          git --version
+          python3 --version
+          tar --version
+          zstd --version
+          df -h /
+
+      - name: Build frontend
+        run: scripts/build.sh
+
+      - name: Inspect result
+        run: |
+          df -h /
+          ls -lh "$RUNNER_TEMP/devtools-frontend.tar.zst"
+
+      - name: Upload frontend
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          if-no-files-found: error
+          path: ${{ runner.temp }}/devtools-frontend.tar.zst

@@ -38,5 +38,7 @@ jobs:
 
       - run: |
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
-            tag -a -f nightly "$GITHUB_SHA" -m "$(< upstream) chromium@${{ steps.build.outputs.chrome }}"
+            tag -a -f nightly "$GITHUB_SHA" -m "$(printf '%s\n\n%s\n' \
+              "$(< upstream) chromium@${{ steps.build.outputs.chrome }}" \
+              "$(git log -1 --format=%s "$GITHUB_SHA")")"
           git push -f origin refs/tags/nightly

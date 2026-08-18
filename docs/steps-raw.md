@@ -108,7 +108,8 @@ Primary tokens:
 
 `.github/workflows/build.yml` runs on push and on manual dispatch. It uploads
 `devtools-frontend.tar.zst` as a workflow artifact and force-pushes annotated
-tag `nightly` with the upstream pin and Chromium version from `DEPS`. That tag is not a GitHub
+tag `nightly` with the upstream pin, Chromium version from `DEPS`, and the
+triggering commit subject on the second line. That tag is not a GitHub
 Release. Create a release from `nightly`
 in the GitHub UI when you want to publish, and attach the workflow artifact
 there.

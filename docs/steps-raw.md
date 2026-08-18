@@ -33,9 +33,10 @@ The workflow never builds a moving branch.
 ## Build pipeline
 
 CI restores `$WORK` from `actions/cache`, keyed on `upstream` and
-`scripts/build.sh`. Theme-only edits still hit. The script skips clone and
-`gclient config` when those already exist, force-checkouts the pin so a
-cached token file cannot leak, then runs `gclient sync` and ninja.
+`scripts/build.sh`. Theme-only edits still hit. The script skips clone,
+`gclient config`, and `gclient sync` when those already exist. If the pin is
+already checked out it only resets the token file. If `theme.css` matches a
+stamp in `$WORK` and `inspector.html` already exists, ninja is skipped.
 
 The script performs these steps in a new temporary workspace:
 
@@ -47,11 +48,11 @@ git clone --depth=1 \
 export PATH="$PWD/depot_tools:$PATH"
 export DEPOT_TOOLS_UPDATE=0
 
-mkdir -p devtools
-git clone --filter=blob:none \
-  https://github.com/ChromeDevTools/devtools-frontend \
-  devtools/devtools-frontend
-
+mkdir -p devtools/devtools-frontend
+git init --quiet devtools/devtools-frontend
+git -C devtools/devtools-frontend remote add origin \
+  https://github.com/ChromeDevTools/devtools-frontend
+git -C devtools/devtools-frontend fetch --depth=1 origin "$revision"
 git -C devtools/devtools-frontend checkout --detach "$revision"
 
 (

@@ -23,6 +23,7 @@ readonly frontend="file://$dest/front_end"
 readonly tokens="$dest/front_end/design_system_tokens.css"
 readonly base="$dest/design_system_tokens.base.css"
 readonly mark='/* === theme.css === */'
+readonly common="$dest/front_end/ui/legacy/inspectorCommon.css.js"
 declare p fetch path
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -93,7 +94,12 @@ awk -v m="$mark" '
   /^:root \{/ { if (++n == 2) exit }
   { print }
 ' "$tokens" >"$base"
-{ printf '\n%s\n' "$mark"; bash "$root/scripts/overlay.sh"; } | cat "$base" - >"$tokens"
+bash "$root/scripts/overlay.sh" | cat "$base" - >"$tokens"
+
+last=$(tail -n1 "$common")
+sed -i -e '\|/\* === inspector.css === \*/|,$d' -e '/sourceURL/d' "$common"
+{ bash "$root/scripts/overlay.sh" inspector.css; printf '%s\n' "$last"; } >>"$common"
+
 printf 'theme %s\nfrontend %s\n' "$tokens" "$frontend"
 
 pgrep -f 'user-data-dir=/tmp/chromium-custom' >/dev/null && {

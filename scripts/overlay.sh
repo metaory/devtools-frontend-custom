@@ -2,6 +2,10 @@
 set -euo pipefail
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+file=${1:-theme.css}
+
+printf '\n/* === %s === */\n' "$file"
+[[ $file == inspector.css ]] && exec cat "$root/$file"
 
 knobs=(
   HUE=270
@@ -25,4 +29,4 @@ for k in "${knobs[@]}"; do
   expr+="s/\"\\\$$n\"/$v/;"
 done
 
-sed "$expr" "$root/theme.css"
+sed "$expr" "$root/$file"

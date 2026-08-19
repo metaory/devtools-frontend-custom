@@ -17,6 +17,7 @@ work="${WORK:-$(mktemp -d "${RUNNER_TEMP:-/tmp}/devtools-custom.XXXXXX")}"
 readonly artifact="${ARTIFACT:-${RUNNER_TEMP:-$PWD}/devtools-frontend.tar.zst}"
 readonly source_dir="$work/devtools/devtools-frontend"
 readonly tokens="$source_dir/front_end/design_system_tokens.css"
+readonly inspector="$source_dir/front_end/ui/legacy/inspectorCommon.css"
 readonly upstream_url='https://github.com/ChromeDevTools/devtools-frontend'
 readonly depot_url='https://chromium.googlesource.com/chromium/tools/depot_tools.git'
 readonly root work ref="$REF"
@@ -41,7 +42,9 @@ git -C "$source_dir" fetch --depth=1 origin "$ref"
 sha="$(git -C "$source_dir" rev-parse FETCH_HEAD)"
 head="$(git -C "$source_dir" rev-parse HEAD 2>/dev/null || true)"
 
-[[ $head == "$sha" ]] && git -C "$source_dir" checkout -- front_end/design_system_tokens.css
+[[ $head == "$sha" ]] && git -C "$source_dir" checkout -- \
+  front_end/design_system_tokens.css \
+  front_end/ui/legacy/inspectorCommon.css
 [[ $head == "$sha" ]] || git -C "$source_dir" checkout --detach --force FETCH_HEAD
 
 chrome="$(sed -n "s/^ *'chrome': '\([^']*\)'.*/\1/p" "$source_dir/DEPS")"
@@ -68,11 +71,10 @@ printf 'ref %s\nsha %s\nchromium %s\n' "$ref" "$sha" "$chrome"
   need third_party/node/linux/node-linux-x64/bin/node
 
   test -f "$tokens"
+  test -f "$inspector"
 
-  {
-    echo '/* === theme.css === */'
-    bash "$root/scripts/overlay.sh"
-  } >>"$tokens"
+  bash "$root/scripts/overlay.sh" >>"$tokens"
+  bash "$root/scripts/overlay.sh" inspector.css >>"$inspector"
 
   buildtools/linux64/gn gen out/Default
   third_party/ninja/ninja -C out/Default

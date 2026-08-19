@@ -67,9 +67,9 @@ alias chrome='google-chrome --custom-devtools-frontend="$HOME/.local/share/chrom
 
 ```sh
 # ~/.bashrc or ~/.zshrc
-alias chromium='\chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
-alias chromium='command chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
 alias chromium='/usr/binchromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
+alias chromium='command chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
+alias chromium='\chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
 ```
 
 <!--
@@ -97,6 +97,7 @@ chromium \
 
 > [!NOTE]
 > Check the Chromium version listed on the release or the pin in `upstream`.
+> A version update might be the culprit
 
 ---
 

@@ -72,6 +72,10 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 > If Chrome/Chromium is already running, a new launch reuses that process and ignores extra flags
 > Quit Chrome completely and relaunch, or use a separate `--user-data-dir`
 
+> [!TIP]
+> You can make the DevTool opens on startup with:
+> `--auto-open-devtools-for-tabs`
+
 ### Linux:
 
 ```sh
@@ -164,7 +168,7 @@ Or a shortcut. Target:
 
 > [!NOTE]
 > Builds follow Chrome Stable. Compare the version on the [release](https://github.com/metaory/devtools-frontend-custom/releases/latest) to yours at `chrome://version`
-> A large major gap might be the culprit
+> A large major gap might cause issues.
 
 ---
 

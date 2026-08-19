@@ -7,6 +7,7 @@ on:
       - upstream
       - scripts/build.sh
       - scripts/pin.sh
+      - scripts/screenshot.sh
       - .github/workflows/**
   workflow_dispatch:
     inputs:
@@ -73,6 +74,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
+          name: devtools-frontend.tar.zst
           archive: false
           if-no-files-found: error
           path: ${{ runner.temp }}/devtools-frontend.tar.zst
@@ -88,3 +90,33 @@ jobs:
               "$REF" "$CHROME" "$SHA" \
               "$(git log -1 --format=%s "$GITHUB_SHA")")"
           git push -f origin refs/tags/nightly
+
+  screenshot:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: devtools-frontend.tar.zst
+          path: ${{ runner.temp }}
+
+      - run: tar -xaf ${{ runner.temp }}/devtools-frontend.tar.zst -C ${{ runner.temp }}
+
+      - run: scripts/screenshot.sh ${{ runner.temp }}/front_end
+
+      - name: Commit screenshots
+        run: |
+          git add .github/assets/screenshot-light.png .github/assets/screenshot-dark.png
+          git diff --cached --quiet && exit 0
+          git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
+            commit -m "$(cat <<'EOF'
+          Update DevTools light and dark screenshots.
+
+          EOF
+          )"
+          git push

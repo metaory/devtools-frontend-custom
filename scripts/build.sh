@@ -68,7 +68,12 @@ printf 'ref %s\nsha %s\nchromium %s\n' "$ref" "$sha" "$chrome"
   need third_party/node/linux/node-linux-x64/bin/node
 
   test -f "$tokens"
-  cat "$root/theme.css" >>"$tokens"
+
+  {
+    echo '/* === theme.css === */'
+    [[ ${HUE-} =~ ^[0-9]+$ ]] || HUE=270
+    sed "s/\"\$HUE\"/$HUE/" "$root/theme.css"
+  } >>"$tokens"
 
   buildtools/linux64/gn gen out/Default
   third_party/ninja/ninja -C out/Default

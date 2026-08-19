@@ -21,6 +21,7 @@ readonly artifact='devtools-frontend.tar.zst'
 readonly frontend="file://$dest/front_end"
 readonly tokens="$dest/front_end/design_system_tokens.css"
 readonly base="$dest/design_system_tokens.base.css"
+readonly mark='/* === theme.css === */'
 declare p fetch path
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -86,8 +87,15 @@ tar=${path:-/tmp/$artifact}
   printf 'extract %s\n' "$dest"
 }
 
-awk '/^:root \{/ { if (++n == 2) exit } { print }' "$tokens" >"$base"
-cat "$base" "$root/theme.css" >"$tokens"
+awk -v m="$mark" '
+  $0 == m { exit }
+  /^:root \{/ { if (++n == 2) exit }
+  { print }
+' "$tokens" >"$base"
+{ printf '\n%s\n' "$mark"
+  [[ ${HUE-} =~ ^[0-9]+$ ]] || HUE=270
+  sed "s/\"\$HUE\"/$HUE/" "$root/theme.css"
+} | cat "$base" - >"$tokens"
 printf 'theme %s\nfrontend %s\n' "$tokens" "$frontend"
 
 pgrep -f 'user-data-dir=/tmp/chromium-custom' >/dev/null && {

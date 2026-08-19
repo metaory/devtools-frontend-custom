@@ -9,7 +9,8 @@ c4=$'\e[34m'
 c5=$'\e[35m'
 c6=$'\e[36m'
 
-cat <<EOF
+if [[ ! ${1-} ]]; then
+  cat <<EOF
  ${c3}${c1}usage${c0} ${c4}screenshot.sh${c3} front_end
    ${c5}writes${c2} .github/assets/screenshot-{1..n}-{light,dark}.png ${c0}
    ${c6}HUES${c0}    ${c2}270 180 90 0${c0}
@@ -21,8 +22,10 @@ cat <<EOF
  ${c6}SPREAD${c0}=${c2}40${c0} ${c6}SAT${c0}=${c2}20${c0} ${c4}screenshot.sh${c0} ${c3}front_end${c0}
  ${c6}HUES${c0}=${c2}180${c0} ${c6}SPREAD${c0}=${c2}30${c0} ${c6}SAT${c0}=${c2}35${c0} ${c4}screenshot.sh${c0} ${c3}front_end${c0}
 EOF
+  exit 1
+fi
 
-[[ ${1-} ]]
+die() { printf '%s\n' "$*" >&2; exit 1; }
 
 browser=${BROWSER:-chromium}
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -37,9 +40,10 @@ need "$browser"
 need curl
 need jq
 
-test -f "$front/devtools_app.html"
+test -f "$front/devtools_app.html" || die "missing $front/devtools_app.html"
+mkdir -p "$out"
 
-trap 'status=$?; (( status )) && cat "$tmp/chrome.log" >&2 || true; [[ ${pid-} ]] && kill $pid 2>/dev/null || true; rm -rf "$tmp"' EXIT
+trap 'status=$?; (( status )) && { echo "--- chrome.log ---" >&2; cat "$tmp/chrome.log" >&2 || true; } || true; [[ ${pid-} ]] && kill $pid 2>/dev/null || true; rm -rf "$tmp"' EXIT
 
 cat >"$tmp/index.html" <<'HTML'
 <!doctype html>
@@ -64,9 +68,10 @@ h1 { color: hsl(281 100% 45%) }
 HTML
 
 "$browser" \
+  --disable-background-networking \
   --disable-extensions \
   --disable-gpu \
-  --enable-unsafe-swiftshader \
+  --enable-logging=stderr \
   --headless=new \
   --hide-scrollbars \
   --no-first-run \
@@ -79,26 +84,24 @@ HTML
 
 pid=$!
 
-for _ in {1..200}; do
+for _ in {1..300}; do
   [[ -s $tmp/profile/DevToolsActivePort ]] && break
-  kill -0 "$pid" 2>/dev/null || break
-  sleep 0.05
+  kill -0 "$pid" 2>/dev/null || die "chrome exited before debug port"
+  sleep 0.1
 done
 
-[[ -s $tmp/profile/DevToolsActivePort ]]
-
+[[ -s $tmp/profile/DevToolsActivePort ]] || die "timeout waiting for DevToolsActivePort"
 port=$(head -n1 "$tmp/profile/DevToolsActivePort")
+[[ $port ]] || die "empty DevToolsActivePort"
 
-[[ $port ]]
-
-for _ in {1..50}; do
+for _ in {1..100}; do
   ws=$(curl -fsS "http://127.0.0.1:$port/json/list" |
     jq -r '.[] | select(.type=="page" and (.url | test("index.html"))) | .webSocketDebuggerUrl' || true)
   [[ $ws == ws://* ]] && break
   sleep 0.1
 done
 
-[[ $ws == ws://* ]]
+[[ $ws == ws://* ]] || die "no page websocket on :$port"
 
 function write_app {
   cat >"$tmp/devtools.html" <<EOF
@@ -120,23 +123,28 @@ app="file://$tmp/devtools.html?ws=${ws#ws://}"
 printf 'port %s\nfrontend %s\n%s\n' "$port" "$front" "$app"
 
 function capture {
-  "$browser" \
-    --allow-file-access-from-files \
-    --disable-background-networking \
-    --disable-gpu \
-    --enable-unsafe-swiftshader \
-    --force-device-scale-factor=1 \
-    --headless=new \
-    --hide-scrollbars \
-    --no-sandbox --disable-dev-shm-usage \
-    --user-data-dir="$tmp/$1" \
-    --virtual-time-budget=15000 \
-    --window-size=1200,800 \
-    --screenshot="$out/screenshot-$1.png" \
-    "${@:2}" \
-    "$app"
-  test -s "$out/screenshot-$1.png"
-  test "$(stat -c%s "$out/screenshot-$1.png")" -gt 10000
+  for t in 1 2 3; do
+    rm -rf "$tmp/cap"
+    "$browser" \
+      --allow-file-access-from-files \
+      --disable-background-networking \
+      --disable-gpu \
+      --enable-unsafe-swiftshader \
+      --force-device-scale-factor=1 \
+      --headless=new \
+      --hide-scrollbars \
+      --no-sandbox --disable-dev-shm-usage \
+      --run-all-compositor-stages-before-draw \
+      --user-data-dir="$tmp/cap" \
+      --virtual-time-budget=15000 \
+      --window-size=1200,800 \
+      --screenshot="$out/screenshot-$1.png" \
+      "${@:2}" \
+      "$app"
+    test "$(stat -c%s "$out/screenshot-$1.png" 2>/dev/null || echo 0)" -gt 10000 && return
+    echo "retry $1 ($t) $(stat -c%s "$out/screenshot-$1.png" 2>/dev/null || echo 0)b" >&2
+  done
+  die "tiny screenshot $1"
 }
 
 read -ra hues <<<"${HUES:-270 180 90 0}"

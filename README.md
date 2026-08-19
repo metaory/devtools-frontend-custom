@@ -5,6 +5,11 @@
   <h5>A custom Chromium DevTools frontend distribution<h5>
 </div>
 
+<div align="center">
+  <img src=".github/assets/screenshot-dark.png" width="80%" />
+  <img src=".github/assets/screenshot-light.png" width="80%" />
+</div>
+
 ---
 
 > [!WARNING]

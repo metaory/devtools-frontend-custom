@@ -4,9 +4,10 @@
   <br>
   <h5>A custom Chromium DevTools frontend distribution</h5>
   <br>
-  <img src=".github/assets/screenshot-1.png" width="48%" /><img src=".github/assets/screenshot-2.png" width="48%" />
+  <img src=".github/assets/screenshot-1.png" width="47%" />&nbsp;&nbsp;<img src=".github/assets/screenshot-2.png" width="47%" />
   <br>
-  <img src=".github/assets/screenshot-3.png" width="48%" /><img src=".github/assets/screenshot-4.png" width="48%" />
+  <br>
+  <img src=".github/assets/screenshot-3.png" width="47%" />&nbsp;&nbsp;<img src=".github/assets/screenshot-4.png" width="47%" />
 </div>
 
 ---

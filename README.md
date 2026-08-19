@@ -18,6 +18,9 @@ Grab `devtools-frontend.tar.zst` from the [latest GitHub Release](https://github
 
 The archive contains the built `front_end/` and applicable upstream and third-party license notices
 
+> [!INFO]
+> Each build is the DevTools branch for current [Chrome Stable](https://chromiumdash.appspot.com/releases?platform=Linux)
+
 ```sh
 gh release download -R metaory/devtools-frontend-custom \
   -p 'devtools-frontend.tar.zst'
@@ -160,8 +163,8 @@ Or a shortcut. Target:
 ## Troubleshoot
 
 > [!NOTE]
-> Compare the Chrome/Chromium version on the [release](https://github.com/metaory/devtools-frontend-custom/releases/latest) to yours at `chrome://version`
-> A large version gap might be the culprit
+> Builds follow Chrome Stable. Compare the version on the [release](https://github.com/metaory/devtools-frontend-custom/releases/latest) to yours at `chrome://version`
+> A large major gap might be the culprit
 
 ---
 

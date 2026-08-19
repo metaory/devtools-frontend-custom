@@ -8,12 +8,45 @@ on:
       - scripts/**
       - .github/workflows/**
   workflow_dispatch:
+    inputs:
+      upstream:
+        description: stable, beta, canary, main, or a git ref
+        required: false
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: write
 
 jobs:
+  pin:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.pin.outputs.ref }}
+      chrome: ${{ steps.pin.outputs.chrome }}
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: pin
+        run: scripts/pin.sh
+        env:
+          UPSTREAM: ${{ github.event.inputs.upstream }}
+
+      - id: check
+        env:
+          REF: ${{ steps.pin.outputs.ref }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          skip=false
+          git fetch origin tag nightly --force || true
+          last=$(git tag -l --format='%(contents:subject)' nightly)
+          [[ $EVENT == schedule && -n $last && ${last%% *} == "$REF" ]] && skip=true
+          printf 'skip=%s\n' "$skip" | tee -a "$GITHUB_OUTPUT"
+
   build:
+    needs: pin
+    if: needs.pin.outputs.skip != 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 120
 
@@ -27,13 +60,14 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/devtools-work
-          key: work-${{ hashFiles('upstream', 'scripts/build.sh') }}
+          key: work-${{ needs.pin.outputs.ref }}-${{ hashFiles('scripts/build.sh') }}
 
       - id: build
         run: scripts/build.sh
         env:
           WORK: ${{ runner.temp }}/devtools-work
           ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
+          REF: ${{ needs.pin.outputs.ref }}
 
       - uses: actions/upload-artifact@v7
         with:
@@ -41,9 +75,13 @@ jobs:
           if-no-files-found: error
           path: ${{ runner.temp }}/devtools-frontend.tar.zst
 
-      - run: |
+      - env:
+          REF: ${{ needs.pin.outputs.ref }}
+          SHA: ${{ steps.build.outputs.sha }}
+          CHROME: ${{ needs.pin.outputs.chrome || steps.build.outputs.chrome }}
+        run: |
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
-            tag -a -f nightly "$GITHUB_SHA" -m "$(printf '%s\n\n%s\n' \
-              "$(< upstream) chromium@${{ steps.build.outputs.chrome }}" \
+            tag -a -f nightly "$GITHUB_SHA" -m "$(printf '%s %s chromium@%s\n\n%s\n' \
+              "$REF" "$SHA" "$CHROME" \
               "$(git log -1 --format=%s "$GITHUB_SHA")")"
           git push -f origin refs/tags/nightly

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
 trap 'printf "failed: %s (line %s)\n" "$BASH_COMMAND" "$LINENO" >&2' ERR
@@ -9,19 +9,20 @@ function need {
   "$1" --version
 }
 
+test -n "$REF"
+
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 work="${WORK:-$(mktemp -d "${RUNNER_TEMP:-/tmp}/devtools-custom.XXXXXX")}"
-revision="$(<"$root/upstream")"
+
+readonly artifact="${ARTIFACT:-${RUNNER_TEMP:-$PWD}/devtools-frontend.tar.zst}"
+readonly source_dir="$work/devtools/devtools-frontend"
+readonly tokens="$source_dir/front_end/design_system_tokens.css"
+readonly upstream_url='https://github.com/ChromeDevTools/devtools-frontend'
+readonly depot_url='https://chromium.googlesource.com/chromium/tools/depot_tools.git'
+readonly root work ref="$REF"
 
 export PATH="$work/depot_tools:$PATH"
 export DEPOT_TOOLS_UPDATE=0
-
-readonly root work revision
-readonly artifact="${ARTIFACT:-${RUNNER_TEMP:-$PWD}/devtools-frontend.tar.zst}"
-readonly upstream_url='https://github.com/ChromeDevTools/devtools-frontend'
-readonly depot_url='https://chromium.googlesource.com/chromium/tools/depot_tools.git'
-readonly source_dir="$work/devtools/devtools-frontend"
-readonly tokens="$source_dir/front_end/design_system_tokens.css"
 
 mkdir -p "$work/devtools" "$(dirname -- "$artifact")"
 
@@ -35,17 +36,15 @@ cipd version
   git -C "$source_dir" remote add origin "$upstream_url"
 }
 
-! git -C "$source_dir" cat-file -e "$revision^{commit}" && git -C "$source_dir" fetch --depth=1 origin "$revision"
+git -C "$source_dir" fetch --depth=1 origin "$ref"
+git -C "$source_dir" checkout --detach --force FETCH_HEAD
 
-head="$(git -C "$source_dir" rev-parse HEAD 2>/dev/null || true)"
-[[ $head == "$revision" ]] && git -C "$source_dir" checkout -- front_end/design_system_tokens.css
-[[ $head == "$revision" ]] || git -C "$source_dir" checkout --detach --force "$revision"
-
+sha="$(git -C "$source_dir" rev-parse HEAD)"
 chrome="$(sed -n "s/^ *'chrome': '\([^']*\)'.*/\1/p" "$source_dir/DEPS")"
 
-printf 'chromium %s\n' "$chrome"
+printf 'ref %s\nsha %s\nchromium %s\n' "$ref" "$sha" "$chrome"
 
-[[ -n ${GITHUB_OUTPUT-} ]] && printf 'chrome=%s\n' "$chrome" >>"$GITHUB_OUTPUT"
+[[ -z ${GITHUB_OUTPUT-} ]] || printf 'sha=%s\nchrome=%s\n' "$sha" "$chrome" >>"$GITHUB_OUTPUT"
 
 [[ ! -f $work/devtools/.gclient ]] && (
   cd "$work/devtools"

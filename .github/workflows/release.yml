@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: semver (0.1.0-rc.1)
+        required: true
+        type: string
+      notes:
+        description: extra release notes
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - env:
+          NOTES: ${{ github.event.inputs.notes }}
+          VERSION: ${{ github.event.inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$VERSION
+          [[ $tag == v* ]] || tag=v$tag
+          test -n "$tag"
+
+          git fetch origin --tags --force
+
+          sha=$(git rev-parse 'nightly^{}')
+          subject=$(git tag -l --format='%(contents:subject)' nightly)
+          ref=${subject%% *}
+          chrome=${subject#*chromium@}
+
+          [[ $subject == *chromium@* && -n $ref && -n $chrome ]]
+
+          run=$(gh run list --workflow Build --status success --limit 30 \
+            --json databaseId,headSha |
+            jq -r --arg sha "$sha" '.[] | select(.headSha == $sha) | .databaseId' |
+            head -n1)
+          test -n "$run"
+
+          gh run download "$run" -n devtools-frontend.tar.zst -D "$RUNNER_TEMP"
+          file=$(find "$RUNNER_TEMP" -name devtools-frontend.tar.zst -type f | head -n1)
+          test -f "$file"
+
+          major=${chrome%%.*}
+          title="$tag for Chrome $major"
+          notes=$(printf 'Built against Chrome %s (`chromium@%s`, DevTools `%s`).' \
+            "$major" "$chrome" "$ref")
+
+          [[ -z ${NOTES:-} ]] || notes+=$'\n\n'"${NOTES%$'\n'}"
+
+          prev=$(git tag -l 'v[0-9]*' --sort=-version:refname | grep -vxF "$tag" | head -n1)
+
+          [[ -z $prev ]] || {
+            log=$(git log --format='- %s' "$prev".."$sha")
+            [[ -z $log ]] || notes+=$'\n\n'"${log%$'\n'}"
+          }
+
+          notes+=$'\n'
+
+          gh release view "$tag" >/dev/null 2>&1 && {
+            printf 'release %s already exists\n' "$tag" >&2
+            exit 1
+          }
+
+          pre=()
+          [[ $tag == *-* ]] && pre=(--prerelease)
+          gh release create "$tag" "$file" --draft --target "$sha" \
+            --title "$title" --notes "$notes" "${pre[@]}"

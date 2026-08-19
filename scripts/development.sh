@@ -12,7 +12,8 @@ c6=$'\e[36m'
 cat <<EOF
  ${c3}${c1}usage${c0} ${c4}development.sh${c3} [-f|--fetch] [tar]
    ${c5}default tar:${c2} /tmp/devtools-frontend.tar.zst
-   ${c3}-f${c6}  download even if tar exists ${c0}
+   ${c3}-f${c6}  download even if tar exists
+   ${c6}knobs${c0}  ${c2}HUE SAT SPREAD HUE_*${c0}  ${c5}defaults in overlay.sh${c0}
 EOF
 
 readonly repo='metaory/devtools-frontend-custom'
@@ -92,10 +93,7 @@ awk -v m="$mark" '
   /^:root \{/ { if (++n == 2) exit }
   { print }
 ' "$tokens" >"$base"
-{ printf '\n%s\n' "$mark"
-  [[ ${HUE-} =~ ^[0-9]+$ ]] || HUE=270
-  sed "s/\"\$HUE\"/$HUE/" "$root/theme.css"
-} | cat "$base" - >"$tokens"
+{ printf '\n%s\n' "$mark"; bash "$root/scripts/overlay.sh"; } | cat "$base" - >"$tokens"
 printf 'theme %s\nfrontend %s\n' "$tokens" "$frontend"
 
 pgrep -f 'user-data-dir=/tmp/chromium-custom' >/dev/null && {

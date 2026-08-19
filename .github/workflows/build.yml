@@ -60,7 +60,7 @@ on:
         type: number
         default: 20
       sat:
-        description: saturation 0-100 (50 is current)
+        description: saturation 0-100
         required: false
         type: number
         default: 50

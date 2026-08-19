@@ -1,5 +1,5 @@
 <div align="center">
-  <h2>Custom DevTools Frontend</h2>
+  <h3>Custom DevTools Frontend</h3>
   <img src=".github/assets/banner.png" width="80%" />
   <br>
   <h5>A custom Chromium DevTools frontend distribution<h5>

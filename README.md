@@ -9,6 +9,17 @@
   <img src=".github/assets/screenshot-dark.png" width="80%" />
   <img src=".github/assets/screenshot-light.png" width="80%" />
 </div>
+<div align="center">
+  <img src=".github/assets/screenshot-dark-270.png" width="24%" />
+  <img src=".github/assets/screenshot-dark-180.png" width="24%" />
+  <img src=".github/assets/screenshot-dark-90.png" width="24%" />
+  <img src=".github/assets/screenshot-dark-0.png" width="24%" />
+  <br>
+  <img src=".github/assets/screenshot-light-270.png" width="24%" />
+  <img src=".github/assets/screenshot-light-180.png" width="24%" />
+  <img src=".github/assets/screenshot-light-90.png" width="24%" />
+  <img src=".github/assets/screenshot-light-0.png" width="24%" />
+</div>
 
 ---
 

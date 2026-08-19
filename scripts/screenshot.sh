@@ -130,7 +130,6 @@ function write_app {
 <link href="application_tokens.css" rel=stylesheet>
 <link href="design_system_tokens.css" rel=stylesheet>
 <style>:root{--hue:$1;--spread:${SPREAD:-20};--sat-in:${SAT:-50}}</style>
-<script type=module>await new Promise(r=>setTimeout(r,4_000))</script>
 <body class=undocked id=-blink-dev-tools style="--user-color-source:baseline-default">
 EOF
 }
@@ -152,8 +151,8 @@ function capture {
       --hide-scrollbars \
       --no-sandbox --disable-dev-shm-usage \
       --run-all-compositor-stages-before-draw \
-      --timeout=20000 \
       --user-data-dir="$tmp/cap" \
+      --virtual-time-budget=40000 \
       --window-size=1200,800 \
       --screenshot="$out/screenshot-$1.png" \
       "${@:2}" \

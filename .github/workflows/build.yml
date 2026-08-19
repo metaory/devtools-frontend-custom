@@ -161,7 +161,7 @@ jobs:
 
   screenshot:
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
@@ -176,9 +176,6 @@ jobs:
 
       - name: extract artifact
         run: tar -xaf ${{ runner.temp }}/devtools-frontend.tar.zst -C ${{ runner.temp }}
-
-      - name: install imagemagick
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
 
       - name: capture screenshot
         env:

@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - theme.css
+      - inspector.css
       - upstream
       - scripts/build.sh
       - scripts/overlay.sh
@@ -179,7 +180,7 @@ jobs:
 
       - name: commit
         run: |
-          git add .github/assets/screenshot-light.png .github/assets/screenshot-dark.png
+          git add .github/assets/screenshot-*.png
           git diff --cached --quiet && exit 0
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
             commit -m "$(cat <<'EOF'

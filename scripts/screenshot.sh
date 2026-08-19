@@ -53,6 +53,7 @@ h1 { color: hsl(281 100% 45%) }
 HTML
 
 chromium --headless=new \
+  --no-sandbox --disable-dev-shm-usage \
   --user-data-dir="$tmp/profile" \
   --remote-debugging-port=0 \
   --remote-allow-origins=* \
@@ -94,6 +95,7 @@ printf 'port %s\nfrontend %s\n%s\n' "$port" "$front" "$app"
 
 capture() {
   chromium --headless=new --disable-gpu --hide-scrollbars \
+    --no-sandbox --disable-dev-shm-usage \
     --window-size=1200,800 \
     --force-device-scale-factor=1 \
     --virtual-time-budget=15000 \

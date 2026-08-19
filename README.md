@@ -214,17 +214,33 @@ Chrome is not on `PATH`. Launch the binary:
 
 ## Development
 
-Theme is `theme.css`. Overlay it onto a built frontend and launch Chromium:
-
-```sh
-./scripts/development.sh
-```
-
-> [!WARNING]
-> `gh` must be authenticated. First run downloads the latest Build artifact to `/tmp/devtools-frontend.tar.zst`, extracts to `~/.local/share/chromium`, concatenates `theme.css` onto `design_system_tokens.css`, then opens Chromium with `--custom-devtools-frontend` and `--user-data-dir=/tmp/chromium-custom`.
+Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes knobs, appends it onto a built frontend, then launches Chromium:
 
 > [!NOTE]
-> Edit `theme.css`, re-run, reload DevTools. If that profile is already running, the script only reapplies the theme.
+> With hue and sat overrides:
+>
+> ```sh
+> ./scripts/development.sh
+> HUE=200 SAT=35 ./scripts/development.sh
+> ```
+
+> [!WARNING]
+> `gh` must be authenticated.
+
+> [!NOTE]
+> First run downloads the latest Build artifact to `/tmp/devtools-frontend.tar.zst`
+>
+> It:
+>
+> - extracts to `~/.local/share/chromium`
+> - strips any previous overlay at `/* === theme.css === */`
+> - appends the substituted theme onto `design_system_tokens.css`
+
+> [!NOTE]
+> Edit `theme.css` or pass knobs as env, re-run, reload DevTools
+>
+> If that profile is already running
+> the script would only reapplies the theme. Fetch, extract, and launch are the same as before.
 
 > [!NOTE]
 >
@@ -235,6 +251,73 @@ Theme is `theme.css`. Overlay it onto a built frontend and launch Chromium:
 
 > [!NOTE]
 > Full `gn`/`ninja` rebuilds (`scripts/build.sh`) run in CI. No local DevTools checkout needed.
+
+---
+
+## Forks
+
+Fork on GitHub, clone yours, enable **Actions** (disabled on new forks).
+Point [`scripts/development.sh`](scripts/development.sh) at your repo (`repo='you/devtools-frontend-custom'`).
+
+> [!NOTE]
+> First compile: **Actions → Build → Run workflow**, or push `theme.css`.
+> Wait for the artifact `devtools-frontend.tar.zst`.
+
+> [!TIP]
+> `workflow_dispatch` only exists on the default branch.
+
+Then:
+
+```sh
+gh auth login
+./scripts/development.sh -f
+```
+
+> [!TIP]
+> `development.sh` pulls _your_ latest successful Build, overlays `theme.css`, and launches Chromium.
+> Later theme edits are local: rerun, reload DevTools.
+>
+> No second CI compile.
+
+> [!NOTE]
+> Download the artifact from the run and pass it:
+>
+> ```sh
+> ./scripts/development.sh /tmp/devtools-frontend.tar.zst
+> ```
+
+> [!NOTE]
+> Knobs live in `theme.css` as `"$HUE"` placeholders.
+> [`scripts/overlay.sh`](scripts/overlay.sh) substitutes them.
+>
+> Empty or non-digit env uses the defaults below.
+> Push and the Monday cron have no inputs, so they always get those defaults.
+
+| `env`        | `default` |
+| ------------ | --------- |
+| `HUE`        | 270       |
+| `HUE_ERROR`  | 10        |
+| `HUE_BLUE`   | 220       |
+| `HUE_GREEN`  | 140       |
+| `HUE_ORANGE` | 30        |
+| `HUE_YELLOW` | 50        |
+| `HUE_CYAN`   | 190       |
+| `HUE_PINK`   | 330       |
+| `SPREAD`     | 20        |
+| `SAT`        | 50        |
+
+> [!TIP]
+> `SAT` is 0-100. 50 is the current ramp, 0 is gray, 100 is 2x chroma.
+> `SPREAD` is the chrome family offset from `HUE` (secondary `+spread`, tertiary `+2*spread`).
+
+> [!NOTE]
+> Local, without waiting on CI:
+>
+> ```sh
+> HUE=200 SAT=35 SPREAD=30 ./scripts/development.sh
+> ```
+
+CI knobs: **Run workflow** number fields, same names. A dispatch with custom knobs still moves the `nightly` tag and may commit screenshots. Change a default in `scripts/overlay.sh` and the matching `workflow_dispatch` input default.
 
 ---
 

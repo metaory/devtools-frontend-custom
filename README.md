@@ -226,6 +226,11 @@ Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes kno
 
 > [!WARNING]
 > `gh` must be authenticated.
+>
+> ```sh
+> gh auth login
+> ./scripts/development.sh -f
+> ```
 
 > [!NOTE]
 > First run downloads the latest Build artifact to `/tmp/devtools-frontend.tar.zst`
@@ -266,12 +271,13 @@ Point [`scripts/development.sh`](scripts/development.sh) at your repo (`repo='yo
 > [!TIP]
 > `workflow_dispatch` only exists on the default branch.
 
-Then:
-
-```sh
-gh auth login
-./scripts/development.sh -f
-```
+> [!WARNING]
+> `gh` must be authenticated.
+>
+> ```sh
+> gh auth login
+> ./scripts/development.sh -f
+> ```
 
 > [!TIP]
 > `development.sh` pulls _your_ latest successful Build, overlays `theme.css`, and launches Chromium.

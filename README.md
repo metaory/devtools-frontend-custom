@@ -1,8 +1,8 @@
 <div align="center">
-  <h3>Custom DevTools Frontend</h3>
+  <h3>devtools theme</h3>
   <img src=".github/assets/banner.png" width="80%" />
   <br>
-  <h5>A custom Chromium DevTools frontend distribution</h5>
+  <h4>DevTools theme for Chromium-based browsers</h4>
   <br>
   <img src=".github/assets/screenshot-1.png" width="47%" />&nbsp;&nbsp;<img src=".github/assets/screenshot-2.png" width="47%" />
   <br>
@@ -54,7 +54,9 @@ tar -xaf devtools-frontend.tar.zst -C "$HOME/.local/share/chromium"
 
 ### macOS
 
-`brew install zstd`; Apple's `tar` has no `zstd` codec
+`brew install zstd`
+
+Apple's `tar` has no `zstd` codec
 
 ```sh
 mkdir -p "$HOME/.local/share/chromium"
@@ -214,7 +216,7 @@ Chrome is not on `PATH`. Launch the binary:
 
 > [!NOTE]
 > Builds follow Chrome Stable
-> Compare the version on the [release](https://github.com/metaory/devtools-frontend-custom/releases/latest) to yours at `chrome://version`
+> Compare the version on the [release](https://github.com/metaory/devtools-theme/releases/latest) to yours at `chrome://version`
 > A large major gap might cause issues
 
 ---
@@ -226,7 +228,7 @@ Chrome is not on `PATH`. Launch the binary:
 > Point [`scripts/development.sh`](scripts/development.sh) at your repo:
 >
 > ```sh
-> readonly repo='you/devtools-frontend-custom'
+> readonly repo='you/devtools-thene'
 > ```
 
 > [!NOTE]
@@ -239,17 +241,13 @@ Chrome is not on `PATH`. Launch the binary:
 > [!NOTE]
 > CI bakes the defaults from [`scripts/overlay.sh`](scripts/overlay.sh) into the artifact.
 > Push and the Monday cron have no inputs, so they always get those defaults.
-> A manual Run workflow can override hues for that run.
-
-> [!TIP]
-> Then overlay and launch as in Development.
+> A manual Run workflow can override hues for that run
 
 ---
 
 ## Development
 
-> [!NOTE]
-> Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes knobs, appends it onto a built frontend, then launches Chromium.
+Modify is `theme.css`
 
 > [!NOTE]
 > With hue and sat overrides:
@@ -277,8 +275,6 @@ Chrome is not on `PATH`. Launch the binary:
 > - appends the substituted theme onto `design_system_tokens.css`
 
 > [!NOTE]
-> Edit `theme.css` or pass knobs as `env`, rerun, reload DevTools
->
 > If that profile is already running
 > the script only reapplies the theme. Fetch, extract, and launch are the same as before.
 
@@ -290,13 +286,8 @@ Chrome is not on `PATH`. Launch the binary:
 > ```
 
 > [!NOTE]
-> Full `gn`/`ninja` rebuilds (`scripts/build.sh`) run in CI. No local DevTools checkout needed.
-
-> [!NOTE]
-> Knobs live in `theme.css` as `"$HUE"` placeholders.
-> [`scripts/overlay.sh`](scripts/overlay.sh) substitutes them.
->
-> Empty or non-digit env uses the defaults below.
+> Full `gn`/`ninja` rebuilds (`scripts/build.sh`) run in CI.
+> No local DevTools checkout need
 
 <div align="center">
 

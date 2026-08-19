@@ -37,9 +37,13 @@ cipd version
 }
 
 git -C "$source_dir" fetch --depth=1 origin "$ref"
-git -C "$source_dir" checkout --detach --force FETCH_HEAD
 
-sha="$(git -C "$source_dir" rev-parse HEAD)"
+sha="$(git -C "$source_dir" rev-parse FETCH_HEAD)"
+head="$(git -C "$source_dir" rev-parse HEAD 2>/dev/null || true)"
+
+[[ $head == "$sha" ]] && git -C "$source_dir" checkout -- front_end/design_system_tokens.css
+[[ $head == "$sha" ]] || git -C "$source_dir" checkout --detach --force FETCH_HEAD
+
 chrome="$(sed -n "s/^ *'chrome': '\([^']*\)'.*/\1/p" "$source_dir/DEPS")"
 
 printf 'ref %s\nsha %s\nchromium %s\n' "$ref" "$sha" "$chrome"

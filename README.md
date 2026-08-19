@@ -7,6 +7,11 @@
 
 ---
 
+> [!WARNING]
+> 🚧WORK IN PROGRESS!
+
+---
+
 ## Download a release
 
 Grab `devtools-frontend.tar.zst` from the [latest GitHub Release](https://github.com/metaory/devtools-frontend-custom/releases/latest)

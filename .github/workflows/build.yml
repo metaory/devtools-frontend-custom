@@ -5,7 +5,8 @@ on:
     paths:
       - theme.css
       - upstream
-      - scripts/**
+      - scripts/build.sh
+      - scripts/pin.sh
       - .github/workflows/**
   workflow_dispatch:
     inputs:

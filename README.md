@@ -18,20 +18,23 @@ Grab `devtools-frontend.tar.zst` from the [latest GitHub Release](https://github
 
 The archive contains the built `front_end/` and applicable upstream and third-party license notices
 
-> [!INFO]
+> [!NOTE]
 > Each build is the DevTools branch for current [Chrome Stable](https://chromiumdash.appspot.com/releases?platform=Linux)
 
-```sh
-gh release download -R metaory/devtools-frontend-custom \
-  -p 'devtools-frontend.tar.zst'
-```
-
-or:
-
-```sh
-curl -fsSL -O \
-  https://github.com/metaory/devtools-frontend-custom/releases/latest/download/devtools-frontend.tar.zst
-```
+> [!NOTE]
+> Download latest release:
+>
+> ```sh
+> gh release download -R metaory/devtools-frontend-custom \
+>   -p 'devtools-frontend.tar.zst'
+> ```
+>
+> or:
+>
+> ```sh
+> curl -fsSL -O \
+>   https://github.com/metaory/devtools-frontend-custom/releases/latest/download/devtools-frontend.tar.zst
+> ```
 
 You can place it anywhere
 
@@ -55,7 +58,7 @@ zstd -dc devtools-frontend.tar.zst | tar -xf - -C "$HOME/.local/share/chromium"
 
 `curl.exe`, not `curl`. Windows 11 `tar` reads `.zst`; Windows 10 may not
 
-```powershell
+```sh
 mkdir -Force "$env:LOCALAPPDATA\chromium"
 tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 ```
@@ -82,46 +85,67 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 
 ### Linux:
 
-```sh
-chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
-google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
-```
+> [!NOTE]
+> With a Chrome/Chromium with custom DevTools:
+>
+> ```sh
+> chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
+> chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
+> google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
+> ```
 
-With a custom user profile:
+> [!NOTE]
+> With a custom user profile:
+>
+> ```sh
+> --user-data-dir="$HOME/.config/chromium-custom"`
+> ```
 
-`--user-data-dir="$HOME/.config/chromium-custom"`
-
-Or create alias in bash/zsh:
+#### Alias:
 
 > [!CAUTION]
+>
 > Do not write `alias chromium='chromium --custom-devtools-frontend=...'`
 > The name calls itself and the shell loops!
 > To reuse the same name, skip the alias on the right-hand side: `\chromium` or `command chromium`
 > or a full path like `/usr/bin/chromium`
 
-```sh
-# ~/.bashrc or ~/.zshrc
-alias chromium='/usr/bin/chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-alias chromium='command chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-alias chromium='\chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-```
+> [!NOTE]
+> With alias:
+>
+> ```sh
+> # ~/.bashrc or ~/.zshrc
+> alias chromium='/usr/bin/chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+> alias chromium='command chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+> alias chromium='\chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+> alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+> ```
 
 ### macOS
 
 Chrome is not on `PATH`. Launch the binary, or alias it in `~/.zshrc`:
 
-```sh
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
-```
+> [!NOTE]
+> With a Chrome/Chromium with custom DevTools:
+>
+> ```sh
+> "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+>   --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
+> ```
 
-```sh
-alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-```
+> [!NOTE]
+> With alias:
+>
+> ```sh
+> alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+> ```
 
-`--user-data-dir="$HOME/.config/chromium-custom"`
+> [!NOTE]
+> With a custom user profile:
+>
+> ```sh
+> --user-data-dir="$HOME/.config/chromium-custom"
+> ```
 
 `open -a "Google Chrome"` drops extra flags unless you pass `--args`, and it still reuses a running Chrome
 
@@ -129,12 +153,22 @@ alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --c
 
 Chrome is not on `PATH`. Launch the binary:
 
-```powershell
-& "C:\Program Files\Google\Chrome\Application\chrome.exe" `
-  --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end"
-```
+> [!NOTE]
+> With a Chrome/Chromium with custom DevTools:
+>
+> ```sh
+> & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+>   --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end"
+> # or:
+> "C:\Program Files\Google\Chrome\Application\chrome.exe" --custom-devtools-frontend=file:///%LOCALAPPDATA%/chromium/front_end
+> ```
 
-`--user-data-dir="$env:LOCALAPPDATA\chromium-custom"`
+> [!NOTE]
+> With a custom user profile:
+>
+> ```sh
+> --user-data-dir="$env:LOCALAPPDATA\chromium-custom"
+> ```
 
 > [!WARNING]
 > Windows `Set-Alias` cannot pass arguments. `$PROFILE` is the file (same role as `~/.bashrc`)
@@ -142,29 +176,26 @@ Chrome is not on `PATH`. Launch the binary:
 > Windows PowerShell 5.1: `Documents\WindowsPowerShell\`
 > Print it with `$PROFILE`. Create it if missing, paste a function, then reload:
 >
-> ```powershell
+> ```sh
 > # $PROFILE
 > if (!(Test-Path $PROFILE)) { New-Item $PROFILE -Force }
 > notepad $PROFILE
 > ```
 
-```powershell
-function chrome {
-  & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
-    --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end" @args
-}
-```
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-. $PROFILE
-```
-
-Or a shortcut. Target:
-
-```
-"C:\Program Files\Google\Chrome\Application\chrome.exe" --custom-devtools-frontend=file:///%LOCALAPPDATA%/chromium/front_end
-```
+> [!NOTE]
+> With a shortcut:
+>
+> ```sh
+> function chrome {
+>   & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+>     --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end" @args
+> }
+> ```
+>
+> ```sh
+> Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+> . $PROFILE
+> ```
 
 ---
 
@@ -173,6 +204,32 @@ Or a shortcut. Target:
 > [!NOTE]
 > Builds follow Chrome Stable. Compare the version on the [release](https://github.com/metaory/devtools-frontend-custom/releases/latest) to yours at `chrome://version`
 > A large major gap might cause issues.
+
+---
+
+## Development
+
+Theme is `theme.css`. Overlay it onto a built frontend and launch Chromium:
+
+```sh
+./scripts/development.sh
+```
+
+> [!WARNING]
+> `gh` must be authenticated. First run downloads the latest Build artifact to `/tmp/devtools-frontend.tar.zst`, extracts to `~/.local/share/chromium`, concatenates `theme.css` onto `design_system_tokens.css`, then opens Chromium with `--custom-devtools-frontend` and `--user-data-dir=/tmp/chromium-custom`.
+
+> [!NOTE]
+> Edit `theme.css`, re-run, reload DevTools. If that profile is already running, the script only reapplies the theme.
+
+> [!NOTE]
+>
+> ```sh
+> ./scripts/development.sh -f                 # download even if the tar exists
+> ./scripts/development.sh /path/to.tar.zst   # use a local archive
+> ```
+
+> [!NOTE]
+> Full `gn`/`ninja` rebuilds (`scripts/build.sh`) run in CI. No local DevTools checkout needed.
 
 ---
 

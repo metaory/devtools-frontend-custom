@@ -43,7 +43,13 @@ need jq
 test -f "$front/devtools_app.html" || die "missing $front/devtools_app.html"
 mkdir -p "$out"
 
-trap 'status=$?; (( status )) && { echo "--- chrome.log ---" >&2; cat "$tmp/chrome.log" >&2 || true; } || true; [[ ${pid-} ]] && kill $pid 2>/dev/null || true; rm -rf "$tmp"' EXIT
+cleanup() {
+  status=$?
+  (( status )) && { echo "--- chrome.log ---" >&2; cat "$tmp/chrome.log" >&2 || true; }
+  [[ ${pid-} ]] && { kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; }
+  rm -rf "$tmp" || true
+}
+trap cleanup EXIT
 
 cat >"$tmp/index.html" <<'HTML'
 <!doctype html>

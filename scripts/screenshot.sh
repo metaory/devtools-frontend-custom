@@ -20,15 +20,16 @@ front=$(realpath "$1")
 out="$root/.github/assets"
 pid=
 
+browser=${BROWSER:-chromium}
 need() { command -v "$1"; }
-need chromium
+need "$browser"
 need curl
 need jq
 
 test -f "$front/devtools_app.html"
 
 tmp=$(mktemp -d)
-trap '[[ ${pid-} ]] && kill $pid 2>/dev/null || true; rm -rf "$tmp"' EXIT
+trap 'status=$?; (( status )) && cat "$tmp/chrome.log" >&2 || true; [[ ${pid-} ]] && kill $pid 2>/dev/null || true; rm -rf "$tmp"' EXIT
 
 cat >"$tmp/index.html" <<'HTML'
 <!doctype html>
@@ -52,7 +53,7 @@ h1 { color: hsl(281 100% 45%) }
 </script>
 HTML
 
-chromium --headless=new \
+"$browser" --headless=new --disable-gpu \
   --no-sandbox --disable-dev-shm-usage \
   --user-data-dir="$tmp/profile" \
   --remote-debugging-port=0 \
@@ -62,10 +63,12 @@ chromium --headless=new \
   "file://$tmp/index.html" >"$tmp/chrome.log" 2>&1 &
 pid=$!
 
-for _ in {1..100}; do
+for _ in {1..200}; do
   [[ -s $tmp/profile/DevToolsActivePort ]] && break
+  kill -0 "$pid" 2>/dev/null || break
   sleep 0.05
 done
+[[ -s $tmp/profile/DevToolsActivePort ]]
 port=$(head -n1 "$tmp/profile/DevToolsActivePort")
 [[ $port ]]
 
@@ -94,7 +97,7 @@ app="file://$tmp/devtools.html?ws=${ws#ws://}"
 printf 'port %s\nfrontend %s\n%s\n' "$port" "$front" "$app"
 
 capture() {
-  chromium --headless=new --disable-gpu --hide-scrollbars \
+  "$browser" --headless=new --disable-gpu --hide-scrollbars \
     --no-sandbox --disable-dev-shm-usage \
     --window-size=1200,800 \
     --force-device-scale-factor=1 \

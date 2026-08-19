@@ -129,6 +129,7 @@ jobs:
 
       - id: build
         run: scripts/build.sh
+        name: build
         env:
           WORK: ${{ runner.temp }}/devtools-work
           ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
@@ -141,7 +142,7 @@ jobs:
           if-no-files-found: error
           path: ${{ runner.temp }}/devtools-frontend.tar.zst
 
-      - name: Tag nightly
+      - name: tag nightly
         env:
           REF: ${{ needs.pin.outputs.ref }}
           SHA: ${{ steps.build.outputs.sha }}
@@ -163,15 +164,20 @@ jobs:
           ref: ${{ github.ref }}
 
       - uses: actions/download-artifact@v8
+        name: download
         with:
           name: devtools-frontend.tar.zst
           path: ${{ runner.temp }}
 
-      - run: tar -xaf ${{ runner.temp }}/devtools-frontend.tar.zst -C ${{ runner.temp }}
+      - name: extract
+        run: tar -xaf ${{ runner.temp }}/devtools-frontend.tar.zst -C ${{ runner.temp }}
 
-      - run: scripts/screenshot.sh ${{ runner.temp }}/front_end
+      - name: capture
+        env:
+          BROWSER: google-chrome-stable
+        run: scripts/screenshot.sh ${{ runner.temp }}/front_end
 
-      - name: Commit screenshots
+      - name: commit
         run: |
           git add .github/assets/screenshot-light.png .github/assets/screenshot-dark.png
           git diff --cached --quiet && exit 0

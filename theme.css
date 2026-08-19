@@ -1,8 +1,28 @@
 :root {
-  /* --sys-color-cdt-base-container: oklch(96% 0.06 315); */
-  /* --sys-color-cdt-base: oklch(91% 0.12 300); */
-  --sys-color-cdt-base-container: #ee88bb;
-  --sys-color-cdt-base: #bb88ff;
+  &.baseline-default,
+  &.baseline-grayscale {
+    --sys-color-base: #c5ccff;
+    --sys-color-surface: #dce1ff;
+    --sys-color-cdt-base-container: #cdd4ff;
+    &.theme-with-dark-background {
+      --sys-color-surface5: color-mix(in sRGB, #8b85ff 14%, #0a091c);
+      --sys-color-surface4: color-mix(in sRGB, #8b85ff 12%, #0a091c);
+      --sys-color-surface3: color-mix(in sRGB, #8b85ff 11%, #0a091c);
+      --sys-color-surface2: color-mix(in sRGB, #8b85ff 8%, #0a091c);
+      --sys-color-surface1: color-mix(in sRGB, #8b85ff 5%, #0a091c);
+      --sys-color-divider: #5c56d4;
+      --sys-color-base: #16133a;
+      --sys-color-surface: #0a091c;
+      --sys-color-cdt-base-container: #100e28;
+    }
+  }
+}
+
+/*
+keep for reference
+:root {
+  --sys-color-cdt-base-container: oklch(96% 0.06 315);
+  --sys-color-cdt-base: oklch(91% 0.12 300);
   --sys-color-surface: oklch(98% 0.03 315);
   --sys-color-surface1: oklch(93% 0.09 310);
   --sys-color-surface2: oklch(88% 0.13 305);
@@ -19,12 +39,9 @@
   --sys-color-state-focus-select: oklch(72% 0.24 190);
 
   &.theme-with-dark-background {
-    /* --sys-color-cdt-base-container: oklch(17% 0.09 285); */
-    /* --sys-color-cdt-base: oklch(13% 0.08 285); */
-    /* --sys-color-surface: oklch(14% 0.07 285); */
-    --sys-color-cdt-base-container: #4411aa;
-    --sys-color-cdt-base: #331144;
-    --sys-color-surface: #aa2244;
+    --sys-color-cdt-base-container: oklch(17% 0.09 285);
+    --sys-color-cdt-base: oklch(13% 0.08 285);
+    --sys-color-surface: oklch(14% 0.07 285);
     --sys-color-surface1: oklch(22% 0.11 290);
     --sys-color-surface2: oklch(26% 0.15 295);
     --sys-color-surface3: oklch(30% 0.19 300);
@@ -40,3 +57,56 @@
     --sys-color-state-focus-select: oklch(72% 0.24 190);
   }
 }
+*/
+
+/*
+:root {
+    &.baseline-default, &.baseline-grayscale {
+        --sys-color-base: var(--ref-palette-neutral100);
+        --sys-color-surface: var(--ref-palette-neutral100);
+        --sys-color-cdt-base-container: var(--ref-palette-neutral100);
+    }
+}
+*/
+
+/*
+:root {
+  &.baseline-default,
+  &.baseline-grayscale {
+    --sys-color-base: var(--ref-palette-neutral100);
+    --sys-color-surface: var(--ref-palette-neutral100);
+    --sys-color-cdt-base-container: var(--ref-palette-neutral100);
+    &.theme-with-dark-background {
+      --sys-color-surface5: color-mix(
+        in sRGB,
+        #d1e1ff 14%,
+        var(--ref-palette-neutral10)
+      );
+      --sys-color-surface4: color-mix(
+        in sRGB,
+        #d1e1ff 12%,
+        var(--ref-palette-neutral10)
+      );
+      --sys-color-surface3: color-mix(
+        in sRGB,
+        #d1e1ff 11%,
+        var(--ref-palette-neutral10)
+      );
+      --sys-color-surface2: color-mix(
+        in sRGB,
+        #d1e1ff 8%,
+        var(--ref-palette-neutral10)
+      );
+      --sys-color-surface1: color-mix(
+        in sRGB,
+        #d1e1ff 5%,
+        var(--ref-palette-neutral10)
+      );
+      --sys-color-divider: var(--ref-palette-neutral40);
+      --sys-color-base: var(--ref-palette-neutral25);
+      --sys-color-surface: var(--ref-palette-neutral10);
+      --sys-color-cdt-base-container: var(--ref-palette-neutral15);
+    }
+  }
+}
+*/

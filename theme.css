@@ -261,7 +261,6 @@
   --ref-palette-pink99: hsl(var(--hue-pink) var(--s-99) var(--l-99));
   --ref-palette-pink100: hsl(var(--hue-pink) var(--s-100) var(--l-100));
 
-  scrollbar-color: var(--ref-palette-neutral50) var(--ref-palette-neutral95);
   --sys-color-divider: color-mix(in srgb, var(--ref-palette-neutral10) 8%, transparent);
   --sys-color-divider-on-tonal-container: color-mix(in srgb, var(--ref-palette-neutral10) 6%, transparent);
   --sys-color-divider-prominent: color-mix(in srgb, var(--ref-palette-neutral10) 14%, transparent);
@@ -270,9 +269,9 @@
   --color-scrollbar-mac-hover: var(--ref-palette-neutral40);
   --color-scrollbar-other: var(--ref-palette-neutral60);
   --color-scrollbar-other-hover: var(--ref-palette-neutral40);
+  scrollbar-color: var(--ref-palette-neutral60) var(--ref-palette-neutral95);
 
   &.theme-with-dark-background {
-    scrollbar-color: var(--ref-palette-neutral40) var(--ref-palette-neutral15);
     --sys-color-divider: color-mix(in srgb, var(--ref-palette-neutral90) 8%, transparent);
     --sys-color-divider-on-tonal-container: color-mix(in srgb, var(--ref-palette-neutral90) 6%, transparent);
     --sys-color-divider-prominent: color-mix(in srgb, var(--ref-palette-neutral90) 14%, transparent);
@@ -281,6 +280,7 @@
     --color-scrollbar-mac-hover: var(--ref-palette-neutral60);
     --color-scrollbar-other: var(--ref-palette-neutral40);
     --color-scrollbar-other-hover: var(--ref-palette-neutral60);
+    scrollbar-color: var(--ref-palette-neutral40) var(--ref-palette-neutral15);
   }
 
   &.baseline-default {
@@ -295,7 +295,6 @@
       --sys-color-surface3: color-mix(in srgb, var(--ref-palette-primary80) 11%, var(--ref-palette-neutral10));
       --sys-color-surface4: color-mix(in srgb, var(--ref-palette-primary80) 12%, var(--ref-palette-neutral10));
       --sys-color-surface5: color-mix(in srgb, var(--ref-palette-primary80) 14%, var(--ref-palette-neutral10));
-      --sys-color-divider: color-mix(in srgb, var(--ref-palette-neutral90) 8%, transparent);
     }
   }
 }

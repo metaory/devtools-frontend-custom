@@ -12,7 +12,7 @@ c6=$'\e[36m'
 if [[ ! ${1-} ]]; then
   cat <<EOF
  ${c3}${c1}usage${c0} ${c4}screenshot.sh${c3} front_end
-   ${c5}writes${c2} .github/assets/screenshot-{1..n}-{light,dark}.png ${c0}
+   ${c5}writes${c2} .github/assets/screenshot-{1..n}.png ${c0}
    ${c6}HUES${c0}    ${c2}270 180 90 0${c0}
    ${c6}SPREAD${c0}  ${c2}20${c0}
    ${c6}SAT${c0}     ${c2}50${c0}
@@ -25,9 +25,12 @@ EOF
   exit 1
 fi
 
-die() { printf '%s\n' "$*" >&2; exit 1; }
+die() { printf '%s\n' "$*" >&2 && exit 1; }
 need() { command -v "$1" >/dev/null || die "missing command: $1"; }
-stop() { kill "$1" 2>/dev/null || true; wait "$1" 2>/dev/null || true; }
+stop() {
+  kill "$1" 2>/dev/null || true
+  wait "$1" 2>/dev/null || true
+}
 
 browser=${BROWSER:-chromium}
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,10 +42,12 @@ shm=()
 [[ ${GITHUB_ACTIONS-} ]] && shm=(--disable-dev-shm-usage)
 
 mkdir -p "$out"
-for c in "$browser" curl jq node; do need "$c"; done
+
+for c in "$browser" convert identify curl jq node; do need "$c"; done
+
 test -f "$front/devtools_app.html" || die "missing $front/devtools_app.html"
 
-cleanup() {
+function cleanup {
   status=$?
   ((status)) && cat "$tmp"/chrome.log "$tmp"/capture.log >&2 2>/dev/null || true
   [[ ${pid-} ]] && stop "$pid"
@@ -50,7 +55,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-cp "$root/scripts/screenshot-demo.html" "$tmp/index.html"
+cp "$root/scripts/screenshot.html" "$tmp/index.html"
 
 flags=(
   --disable-background-networking
@@ -65,21 +70,27 @@ flags=(
   "${shm[@]}"
 )
 
-page_ws() {
+function page_ws {
   curl -fsS "http://127.0.0.1:$1/json/list" |
     jq -r --arg p "$2" \
       '.[] | select(.type=="page" and (.url | contains($p))) | .webSocketDebuggerUrl' ||
-      true
+    true
 }
 
-chrome_ws() {
+function chrome_ws {
   local dir=$1 pat=$2 tries=$3 check=${4-} i port ws
   for ((i = 0; i < tries; i++)); do
     [[ $check ]] && ! kill -0 "$check" 2>/dev/null && return 1
-    [[ -s $dir/DevToolsActivePort ]] || { sleep 0.25; continue; }
+    [[ -s $dir/DevToolsActivePort ]] || {
+      sleep 0.25
+      continue
+    }
     port=$(head -n1 "$dir/DevToolsActivePort")
     ws=$(page_ws "$port" "$pat")
-    [[ $ws == ws://* ]] && { printf '%s\n' "$ws"; return; }
+    [[ $ws == ws://* ]] && {
+      printf '%s\n' "$ws"
+      return
+    }
     sleep 0.25
   done
   return 1
@@ -94,7 +105,7 @@ pid=$!
 ws=$(chrome_ws "$tmp/profile" index.html 80 "$pid") ||
   die "no page websocket"
 
-write_app() {
+function write_app {
   cat >"$tmp/devtools.html" <<EOF
 <!doctype html>
 <html lang=en>
@@ -112,7 +123,7 @@ EOF
 app="file://$tmp/devtools.html?ws=${ws#ws://}"
 printf 'port %s\nfrontend %s\n%s\n' "$(head -n1 "$tmp/profile/DevToolsActivePort")" "$front" "$app"
 
-capture() {
+function capture {
   local name=$1 cap browser_pid cap_ws bytes t
   shift
   for t in 1 2 3; do
@@ -130,14 +141,14 @@ capture() {
     cap_ws=$(chrome_ws "$cap" devtools.html 100 "$browser_pid") || cap_ws=
     rm -f "$out/screenshot-$name.png"
     [[ $cap_ws == ws://* ]] &&
-      node "$root/scripts/capture.mjs" "$cap_ws" "$out/screenshot-$name.png" \
+      node "$root/scripts/screenshot.mjs" "$cap_ws" "$out/screenshot-$name.png" \
         >"$tmp/capture.log" 2>&1 &&
       bytes=$(stat -c%s "$out/screenshot-$name.png" 2>/dev/null || echo 0) &&
       ((bytes > 10000)) && {
-        echo "$bytes bytes $name"
-        stop "$browser_pid"
-        return
-      }
+      echo "$bytes bytes $name"
+      stop "$browser_pid"
+      return
+    }
     echo "retry $name ($t)" >&2
     cat "$tmp/capture.log" "$cap.log" >&2 || true
     stop "$browser_pid"
@@ -145,12 +156,27 @@ capture() {
   die "failed screenshot: $name"
 }
 
+function pair {
+  local n=$1 light=$out/screenshot-$n-light.png dark=$out/screenshot-$n-dark.png
+  local w h dx dy
+  read -r w h < <(identify -format '%w %h\n' "$light")
+  dx=$((w * 10 / 100))
+  dy=$((h * 10 / 100))
+  convert -size "$((w + dx))x$((h + dy))" xc:none \
+    "$light" -geometry "+0+${dy}" -composite \
+    "$dark" -geometry "+${dx}+0" -composite \
+    "$out/screenshot-$n.png"
+  rm -f "$light" "$dark"
+}
+
 read -ra hues <<<"${HUES:-270 180 90 0}"
+
 for i in "${!hues[@]}"; do
   write_app "${hues[i]}"
   n=$((i + 1))
   capture "$n-light" --blink-settings=preferredColorScheme=1
   capture "$n-dark" --blink-settings=preferredColorScheme=0
+  pair "$n"
 done
 
 ls -lh "$out"/screenshot-*.png

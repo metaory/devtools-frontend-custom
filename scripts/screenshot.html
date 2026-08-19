@@ -2,28 +2,11 @@
 <meta charset="utf-8" />
 <title>Custom DevTools</title>
 <style>
-  :root {
-    color-scheme: light dark;
-    --accent: hsl(270 90% 40%);
-  }
-  body {
-    font: 16px system-ui;
-    margin: 1.5rem;
-  }
-  h1,
-  a {
-    color: var(--accent);
-  }
-  .card {
-    padding: 1rem;
-    border: 4px solid var(--accent);
-    border-radius: 16px;
-  }
-  th,
-  td {
-    border: 2px solid var(--accent);
-    padding: 0.25rem 0.5rem;
-  }
+  :root { color-scheme: light dark; --accent: hsl(270 90% 40%); }
+  body { font: 16px system-ui; margin: 1.5rem; }
+  h1, a { color: var(--accent); }
+  .card { padding: 1rem; border: 4px solid var(--accent); border-radius: 16px; }
+  th, td { border: 2px solid var(--accent); padding: 0.25rem 0.5rem; }
 </style>
 <header id="mast" data-theme="custom">
   <h1>Custom DevTools</h1>
@@ -60,6 +43,7 @@
   <output id="out">ready</output>
 </footer>
 <script>
+  console.clear()
   const n = {
     theme: "custom",
     tokens: ["keyword", "string", 42],

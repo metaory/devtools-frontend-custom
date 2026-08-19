@@ -8,10 +8,9 @@ on:
       - upstream
       - scripts/build.sh
       - scripts/overlay.sh
-      - scripts/pin.sh
+      - scripts/resolve.sh
       - scripts/screenshot.sh
-      - scripts/capture.mjs
-      - scripts/screenshot-demo.html
+      - scripts/screenshot.mjs
       - .github/workflows/**
   workflow_dispatch:
     inputs:
@@ -88,23 +87,23 @@ env:
   SAT: ${{ github.event.inputs.sat }}
 
 jobs:
-  pin:
+  resolve:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
-      ref: ${{ steps.pin.outputs.ref }}
-      chrome: ${{ steps.pin.outputs.chrome }}
+      ref: ${{ steps.resolve.outputs.ref }}
+      chrome: ${{ steps.resolve.outputs.chrome }}
       skip: ${{ steps.check.outputs.skip }}
     steps:
       - uses: actions/checkout@v7
 
-      - id: pin
-        run: scripts/pin.sh
+      - id: resolve
+        run: scripts/resolve.sh
 
       - id: check
         name: Skip schedule if ref unchanged
         env:
-          REF: ${{ steps.pin.outputs.ref }}
+          REF: ${{ steps.resolve.outputs.ref }}
           EVENT: ${{ github.event_name }}
         run: |
           skip=false
@@ -114,8 +113,8 @@ jobs:
           printf 'skip=%s\n' "$skip" | tee -a "$GITHUB_OUTPUT"
 
   build:
-    needs: pin
-    if: needs.pin.outputs.skip != 'true'
+    needs: resolve
+    if: needs.resolve.outputs.skip != 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 20
 
@@ -127,9 +126,10 @@ jobs:
           python-version: "3.11"
 
       - uses: actions/cache@v6
+        name: setup cache
         with:
           path: ${{ runner.temp }}/devtools-work
-          key: work-${{ needs.pin.outputs.ref }}-${{ hashFiles('scripts/build.sh') }}
+          key: work-${{ needs.resolve.outputs.ref }}-${{ hashFiles('scripts/build.sh') }}
 
       - id: build
         run: scripts/build.sh
@@ -137,9 +137,10 @@ jobs:
         env:
           WORK: ${{ runner.temp }}/devtools-work
           ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
-          REF: ${{ needs.pin.outputs.ref }}
+          REF: ${{ needs.resolve.outputs.ref }}
 
       - uses: actions/upload-artifact@v7
+        name: upload artifact
         with:
           name: devtools-frontend.tar.zst
           archive: false
@@ -148,9 +149,9 @@ jobs:
 
       - name: tag nightly
         env:
-          REF: ${{ needs.pin.outputs.ref }}
+          REF: ${{ needs.resolve.outputs.ref }}
           SHA: ${{ steps.build.outputs.sha }}
-          CHROME: ${{ needs.pin.outputs.chrome || steps.build.outputs.chrome }}
+          CHROME: ${{ needs.resolve.outputs.chrome || steps.build.outputs.chrome }}
         run: |
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
             tag -a -f nightly "$GITHUB_SHA" -m "$(printf '%s chromium@%s\n\n%s\n%s\n' \
@@ -168,15 +169,18 @@ jobs:
           ref: ${{ github.ref }}
 
       - uses: actions/download-artifact@v8
-        name: download
+        name: download artifact
         with:
           name: devtools-frontend.tar.zst
           path: ${{ runner.temp }}
 
-      - name: extract
+      - name: extract artifact
         run: tar -xaf ${{ runner.temp }}/devtools-frontend.tar.zst -C ${{ runner.temp }}
 
-      - name: capture
+      - name: install imagemagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: capture screenshot
         env:
           BROWSER: google-chrome-stable
         run: scripts/screenshot.sh ${{ runner.temp }}/front_end
@@ -184,10 +188,11 @@ jobs:
       - name: commit
         run: |
           git add .github/assets/screenshot-*.png
+          git add -u .github/assets
           git diff --cached --quiet && exit 0
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
             commit -m "$(cat <<'EOF'
-          Update DevTools light and dark screenshots.
+          Update DevTools screenshots.
 
           EOF
           )"

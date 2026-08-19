@@ -2,19 +2,11 @@
   <h3>Custom DevTools Frontend</h3>
   <img src=".github/assets/banner.png" width="80%" />
   <br>
-  <h5>A custom Chromium DevTools frontend distribution<h5>
-</div>
-
-<div align="center">
-  <img src=".github/assets/screenshot-1-dark.png" width="24%" />
-  <img src=".github/assets/screenshot-2-dark.png" width="24%" />
-  <img src=".github/assets/screenshot-3-dark.png" width="24%" />
-  <img src=".github/assets/screenshot-4-dark.png" width="24%" />
+  <h5>A custom Chromium DevTools frontend distribution</h5>
   <br>
-  <img src=".github/assets/screenshot-1-light.png" width="24%" />
-  <img src=".github/assets/screenshot-2-light.png" width="24%" />
-  <img src=".github/assets/screenshot-3-light.png" width="24%" />
-  <img src=".github/assets/screenshot-4-light.png" width="24%" />
+  <img src=".github/assets/screenshot-1.png" width="48%" /><img src=".github/assets/screenshot-2.png" width="48%" />
+  <br>
+  <img src=".github/assets/screenshot-3.png" width="48%" /><img src=".github/assets/screenshot-4.png" width="48%" />
 </div>
 
 ---
@@ -52,7 +44,7 @@ The archive contains the built `front_end/` and applicable upstream and third-pa
 
 You can place it anywhere
 
-### Linux:
+### Linux
 
 ```sh
 mkdir -p "$HOME/.local/share/chromium"
@@ -94,10 +86,10 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 > Quit Chrome completely and relaunch, or use a separate `--user-data-dir`
 
 > [!TIP]
-> You can make the DevTool opens on startup with:
+> You can make DevTools open on startup with:
 > `--auto-open-devtools-for-tabs`
 
-### Linux:
+### Linux
 
 > [!NOTE]
 > With a Chrome/Chromium with custom DevTools:
@@ -112,10 +104,10 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 > With a custom user profile:
 >
 > ```sh
-> --user-data-dir="$HOME/.config/chromium-custom"`
+> --user-data-dir="$HOME/.config/chromium-custom"
 > ```
 
-#### Alias:
+#### Alias
 
 > [!CAUTION]
 >
@@ -129,9 +121,7 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 >
 > ```sh
 > # ~/.bashrc or ~/.zshrc
-> alias chromium='/usr/bin/chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
 > alias chromium='command chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-> alias chromium='\chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
 > alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
 > ```
 
@@ -228,12 +218,40 @@ Chrome is not on `PATH`. Launch the binary:
 
 ---
 
-## Development
-
-Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes knobs, appends it onto a built frontend, then launches Chromium:
+## Forks
 
 > [!NOTE]
-> With hue and sat overrides and `ci` action run artifact:
+> Fork on GitHub, clone yours, enable **Actions** (disabled on new forks).
+> Point [`scripts/development.sh`](scripts/development.sh) at your repo:
+>
+> ```sh
+> readonly repo='you/devtools-frontend-custom'
+> ```
+
+> [!NOTE]
+> First compile: **Actions → Build → Run workflow**, or push `theme.css`.
+> Wait for the artifact `devtools-frontend.tar.zst`.
+
+> [!TIP]
+> `workflow_dispatch` only exists on the default branch.
+
+> [!NOTE]
+> CI bakes the defaults from [`scripts/overlay.sh`](scripts/overlay.sh) into the artifact.
+> Push and the Monday cron have no inputs, so they always get those defaults.
+> A manual Run workflow can override hues for that run.
+
+> [!TIP]
+> Then overlay and launch as in Development.
+
+---
+
+## Development
+
+> [!NOTE]
+> Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes knobs, appends it onto a built frontend, then launches Chromium.
+
+> [!NOTE]
+> With hue and sat overrides:
 >
 > ```sh
 > ./scripts/development.sh
@@ -261,7 +279,7 @@ Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes kno
 > Edit `theme.css` or pass knobs as `env`, rerun, reload DevTools
 >
 > If that profile is already running
-> the script would only reapplies the theme. Fetch, extract, and launch are the same as before.
+> the script only reapplies the theme. Fetch, extract, and launch are the same as before.
 
 > [!NOTE]
 >
@@ -273,47 +291,11 @@ Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes kno
 > [!NOTE]
 > Full `gn`/`ninja` rebuilds (`scripts/build.sh`) run in CI. No local DevTools checkout needed.
 
----
-
-## Forks
-
-Fork on GitHub, clone yours, enable **Actions** (disabled on new forks).
-Point [`scripts/development.sh`](scripts/development.sh) at your repo (`repo='you/devtools-frontend-custom'`).
-
-> [!NOTE]
-> First compile: **Actions → Build → Run workflow**, or push `theme.css`.
-> Wait for the artifact `devtools-frontend.tar.zst`.
-
-> [!TIP]
-> `workflow_dispatch` only exists on the default branch.
-
-> [!WARNING]
-> `gh` must be authenticated.
->
-> ```sh
-> gh auth login
-> ./scripts/development.sh -f
-> ```
-
-> [!TIP]
-> `development.sh` pulls _your_ latest successful Build, overlays `theme.css`, and launches Chromium.
-> Later theme edits are local: rerun, reload DevTools.
->
-> No second CI compile.
-
-> [!NOTE]
-> Download the artifact from the run and pass it:
->
-> ```sh
-> ./scripts/development.sh /tmp/devtools-frontend.tar.zst
-> ```
-
 > [!NOTE]
 > Knobs live in `theme.css` as `"$HUE"` placeholders.
 > [`scripts/overlay.sh`](scripts/overlay.sh) substitutes them.
 >
 > Empty or non-digit env uses the defaults below.
-> Push and the Monday cron have no inputs, so they always get those defaults.
 
 <div align="center">
 
@@ -335,14 +317,6 @@ Point [`scripts/development.sh`](scripts/development.sh) at your repo (`repo='yo
 > [!TIP]
 > `SAT` is 0-100. 50 is the current ramp, 0 is gray, 100 is 2x chroma
 > `SPREAD` is the chrome family offset from `HUE` (secondary `+spread`, tertiary `+2*spread`)
-
-> [!NOTE]
-> With hue and sat overrides and `ci` action run artifact:
->
-> ```sh
-> ./scripts/development.sh
-> HUE=200 SAT=35 ./scripts/development.sh
-> ```
 
 ---
 

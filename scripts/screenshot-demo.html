@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Custom DevTools</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --accent: hsl(270 90% 40%);
+  }
+  body {
+    font: 16px system-ui;
+    margin: 1.5rem;
+  }
+  h1,
+  a {
+    color: var(--accent);
+  }
+  .card {
+    padding: 1rem;
+    border: 4px solid var(--accent);
+    border-radius: 16px;
+  }
+  th,
+  td {
+    border: 2px solid var(--accent);
+    padding: 0.25rem 0.5rem;
+  }
+</style>
+<header id="mast" data-theme="custom">
+  <h1>Custom DevTools</h1>
+  <p class="lede">theme specimen</p>
+</header>
+<nav class="tabs" aria-label="specimen">
+  <a href="#tokens">tokens</a>
+  <a href="#swatches">swatches</a>
+  <a href="#knobs">knobs</a>
+</nav>
+<main id="app" class="card">
+  <section id="tokens">
+    <h2>tokens</h2>
+    <dl>
+      <dt data-kind="color">keyword</dt>
+      <dd>#c084fc</dd>
+      <dt data-kind="color">string</dt>
+      <dd>#86efac</dd>
+      <dt data-kind="color">number</dt>
+      <dd>#fbbf24</dd>
+    </dl>
+  </section>
+  <section id="swatches">
+    <h2>hues</h2>
+    <ul>
+      <li data-hue="270">violet</li>
+      <li data-hue="200">cyan</li>
+      <li data-hue="140">green</li>
+      <li data-hue="30">orange</li>
+    </ul>
+  </section>
+</main>
+<footer role="contentinfo">
+  <output id="out">ready</output>
+</footer>
+<script>
+  const n = {
+    theme: "custom",
+    tokens: ["keyword", "string", 42],
+    hues: [270, 200, 140, 30],
+  };
+  console.log("hello", n);
+  document.getElementById("out").textContent = JSON.stringify(n);
+</script>

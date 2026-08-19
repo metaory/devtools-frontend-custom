@@ -25,10 +25,9 @@ EOF
   exit 1
 fi
 
-die() {
-  printf '%s\n' "$*" >&2
-  exit 1
-}
+die() { printf '%s\n' "$*" >&2; exit 1; }
+need() { command -v "$1" >/dev/null || die "missing command: $1"; }
+stop() { kill "$1" 2>/dev/null || true; wait "$1" 2>/dev/null || true; }
 
 browser=${BROWSER:-chromium}
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -36,90 +35,66 @@ front=$(realpath "$1")
 out="$root/.github/assets"
 tmp=$(mktemp -d)
 pid=
-ws=
+shm=()
+[[ ${GITHUB_ACTIONS-} ]] && shm=(--disable-dev-shm-usage)
 
 mkdir -p "$out"
-
-need() { command -v "$1"; }
-need "$browser"
-need curl
-need jq
-
+for c in "$browser" curl jq node; do need "$c"; done
 test -f "$front/devtools_app.html" || die "missing $front/devtools_app.html"
 
-function cleanup {
+cleanup() {
   status=$?
-  ((status)) && {
-    echo "--- chrome.log ---" >&2
-    cat "$tmp/chrome.log" >&2 || true
-  }
-  [[ ${pid-} ]] && {
-    kill "$pid" 2>/dev/null || true
-    wait "$pid" 2>/dev/null || true
-  }
+  ((status)) && cat "$tmp"/chrome.log "$tmp"/capture.log >&2 2>/dev/null || true
+  [[ ${pid-} ]] && stop "$pid"
   rm -rf "$tmp" || true
 }
 trap cleanup EXIT
 
-cat >"$tmp/index.html" <<'HTML'
-<!doctype html>
-<meta charset=utf-8>
-<title>Custom DevTools</title>
-<style>
-:root { color-scheme: light dark }
-body { font: 18px system-ui; margin: 2rem }
-h1 { color: hsl(260 90% 40%) }
-.card { padding: 1rem; border: 4px solid hsl(270 90% 40%); border-radius: 16px }
-</style>
-<main class=card>
-  <h1>Custom DevTools</h1>
-  <p id=out>ready</p>
-  <button>inspect</button>
-</main>
-<script>
-  const n = { theme: 'custom', tokens: ['keyword', 'string', 42] }
-  console.log('hello', n)
-  document.getElementById('out').textContent = JSON.stringify(n)
-</script>
-HTML
+cp "$root/scripts/screenshot-demo.html" "$tmp/index.html"
 
-"$browser" \
-  --disable-background-networking \
-  --disable-extensions \
-  --disable-gpu \
-  --headless=new \
-  --hide-scrollbars \
-  --no-first-run \
-  --no-sandbox --disable-dev-shm-usage \
-  --remote-allow-origins=* \
-  --remote-debugging-port=0 \
+flags=(
+  --disable-background-networking
+  --disable-extensions
+  --disable-gpu
+  --headless=new
+  --hide-scrollbars
+  --no-first-run
+  --no-sandbox
+  --remote-allow-origins=*
+  --remote-debugging-port=0
+  "${shm[@]}"
+)
+
+page_ws() {
+  curl -fsS "http://127.0.0.1:$1/json/list" |
+    jq -r --arg p "$2" \
+      '.[] | select(.type=="page" and (.url | contains($p))) | .webSocketDebuggerUrl' ||
+      true
+}
+
+chrome_ws() {
+  local dir=$1 pat=$2 tries=$3 check=${4-} i port ws
+  for ((i = 0; i < tries; i++)); do
+    [[ $check ]] && ! kill -0 "$check" 2>/dev/null && return 1
+    [[ -s $dir/DevToolsActivePort ]] || { sleep 0.25; continue; }
+    port=$(head -n1 "$dir/DevToolsActivePort")
+    ws=$(page_ws "$port" "$pat")
+    [[ $ws == ws://* ]] && { printf '%s\n' "$ws"; return; }
+    sleep 0.25
+  done
+  return 1
+}
+
+"$browser" "${flags[@]}" \
   --user-data-dir="$tmp/profile" \
   --custom-devtools-frontend="file://$front" \
   "file://$tmp/index.html" >"$tmp/chrome.log" 2>&1 &
-
 pid=$!
 
-sleep 2
-for _ in {1..15}; do
-  [[ -s $tmp/profile/DevToolsActivePort ]] && break
-  kill -0 "$pid" 2>/dev/null || die "chrome exited before debug port"
-  sleep 1
-done
+ws=$(chrome_ws "$tmp/profile" index.html 80 "$pid") ||
+  die "no page websocket"
 
-[[ -s $tmp/profile/DevToolsActivePort ]] || die "timeout waiting for DevToolsActivePort"
-port=$(head -n1 "$tmp/profile/DevToolsActivePort")
-[[ $port ]] || die "empty DevToolsActivePort"
-
-for _ in {1..10}; do
-  ws=$(curl -fsS "http://127.0.0.1:$port/json/list" |
-    jq -r '.[] | select(.type=="page" and (.url | test("index.html"))) | .webSocketDebuggerUrl' || true)
-  [[ $ws == ws://* ]] && break
-  sleep 0.5
-done
-
-[[ $ws == ws://* ]] || die "no page websocket on :$port"
-
-function write_app {
+write_app() {
   cat >"$tmp/devtools.html" <<EOF
 <!doctype html>
 <html lang=en>
@@ -135,41 +110,42 @@ EOF
 }
 
 app="file://$tmp/devtools.html?ws=${ws#ws://}"
+printf 'port %s\nfrontend %s\n%s\n' "$(head -n1 "$tmp/profile/DevToolsActivePort")" "$front" "$app"
 
-printf 'port %s\nfrontend %s\n%s\n' "$port" "$front" "$app"
-
-function capture {
+capture() {
+  local name=$1 cap browser_pid cap_ws bytes t
+  shift
   for t in 1 2 3; do
-    rm -rf "$tmp/cap"
-    "$browser" \
+    cap="$tmp/cap-$name"
+    rm -rf "$cap"
+    mkdir -p "$cap"
+    "$browser" "${flags[@]}" \
       --allow-file-access-from-files \
-      --disable-background-networking \
-      --disable-gpu \
-      --enable-unsafe-swiftshader \
       --force-device-scale-factor=1 \
-      --headless=new \
-      --hide-scrollbars \
-      --no-sandbox --disable-dev-shm-usage \
       --run-all-compositor-stages-before-draw \
-      --user-data-dir="$tmp/cap" \
-      --virtual-time-budget=40000 \
+      --user-data-dir="$cap" \
       --window-size=1200,800 \
-      --screenshot="$out/screenshot-$1.png" \
-      "${@:2}" \
-      "$app" >"$tmp/cap.log" 2>&1
-    bytes=$(stat -c%s "$out/screenshot-$1.png" 2>/dev/null || echo 0)
-    ((bytes > 10000)) && {
-      echo "$bytes bytes $1"
-      return
-    }
-    echo "retry $1 ($t) ${bytes}b" >&2
+      "$@" "$app" >"$cap.log" 2>&1 &
+    browser_pid=$!
+    cap_ws=$(chrome_ws "$cap" devtools.html 100 "$browser_pid") || cap_ws=
+    rm -f "$out/screenshot-$name.png"
+    [[ $cap_ws == ws://* ]] &&
+      node "$root/scripts/capture.mjs" "$cap_ws" "$out/screenshot-$name.png" \
+        >"$tmp/capture.log" 2>&1 &&
+      bytes=$(stat -c%s "$out/screenshot-$name.png" 2>/dev/null || echo 0) &&
+      ((bytes > 10000)) && {
+        echo "$bytes bytes $name"
+        stop "$browser_pid"
+        return
+      }
+    echo "retry $name ($t)" >&2
+    cat "$tmp/capture.log" "$cap.log" >&2 || true
+    stop "$browser_pid"
   done
-  cat "$tmp/cap.log" >&2 || true
-  die "tiny screenshot $1"
+  die "failed screenshot: $name"
 }
 
 read -ra hues <<<"${HUES:-270 180 90 0}"
-
 for i in "${!hues[@]}"; do
   write_app "${hues[i]}"
   n=$((i + 1))

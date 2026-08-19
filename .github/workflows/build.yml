@@ -10,6 +10,8 @@ on:
       - scripts/overlay.sh
       - scripts/pin.sh
       - scripts/screenshot.sh
+      - scripts/capture.mjs
+      - scripts/screenshot-demo.html
       - .github/workflows/**
   workflow_dispatch:
     inputs:
@@ -88,6 +90,7 @@ env:
 jobs:
   pin:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     outputs:
       ref: ${{ steps.pin.outputs.ref }}
       chrome: ${{ steps.pin.outputs.chrome }}

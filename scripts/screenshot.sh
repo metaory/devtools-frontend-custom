@@ -25,7 +25,10 @@ EOF
   exit 1
 fi
 
-die() { printf '%s\n' "$*" >&2; exit 1; }
+die() {
+  printf '%s\n' "$*" >&2
+  exit 1
+}
 
 browser=${BROWSER:-chromium}
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -35,18 +38,25 @@ tmp=$(mktemp -d)
 pid=
 ws=
 
+mkdir -p "$out"
+
 need() { command -v "$1"; }
 need "$browser"
 need curl
 need jq
 
 test -f "$front/devtools_app.html" || die "missing $front/devtools_app.html"
-mkdir -p "$out"
 
-cleanup() {
+function cleanup {
   status=$?
-  (( status )) && { echo "--- chrome.log ---" >&2; cat "$tmp/chrome.log" >&2 || true; }
-  [[ ${pid-} ]] && { kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; }
+  ((status)) && {
+    echo "--- chrome.log ---" >&2
+    cat "$tmp/chrome.log" >&2 || true
+  }
+  [[ ${pid-} ]] && {
+    kill "$pid" 2>/dev/null || true
+    wait "$pid" 2>/dev/null || true
+  }
   rm -rf "$tmp" || true
 }
 trap cleanup EXIT
@@ -58,8 +68,8 @@ cat >"$tmp/index.html" <<'HTML'
 <style>
 :root { color-scheme: light dark }
 body { font: 18px system-ui; margin: 2rem }
-h1 { color: hsl(281 100% 45%) }
-.card { padding: 1rem; border: 4px solid hsl(307 100% 47%); border-radius: 16px }
+h1 { color: hsl(260 90% 40%) }
+.card { padding: 1rem; border: 4px solid hsl(270 90% 40%); border-radius: 16px }
 </style>
 <main class=card>
   <h1>Custom DevTools</h1>
@@ -77,7 +87,6 @@ HTML
   --disable-background-networking \
   --disable-extensions \
   --disable-gpu \
-  --enable-logging=stderr \
   --headless=new \
   --hide-scrollbars \
   --no-first-run \
@@ -90,21 +99,22 @@ HTML
 
 pid=$!
 
-for _ in {1..300}; do
+sleep 2
+for _ in {1..15}; do
   [[ -s $tmp/profile/DevToolsActivePort ]] && break
   kill -0 "$pid" 2>/dev/null || die "chrome exited before debug port"
-  sleep 0.1
+  sleep 1
 done
 
 [[ -s $tmp/profile/DevToolsActivePort ]] || die "timeout waiting for DevToolsActivePort"
 port=$(head -n1 "$tmp/profile/DevToolsActivePort")
 [[ $port ]] || die "empty DevToolsActivePort"
 
-for _ in {1..100}; do
+for _ in {1..10}; do
   ws=$(curl -fsS "http://127.0.0.1:$port/json/list" |
     jq -r '.[] | select(.type=="page" and (.url | test("index.html"))) | .webSocketDebuggerUrl' || true)
   [[ $ws == ws://* ]] && break
-  sleep 0.1
+  sleep 0.5
 done
 
 [[ $ws == ws://* ]] || die "no page websocket on :$port"
@@ -120,6 +130,7 @@ function write_app {
 <link href="application_tokens.css" rel=stylesheet>
 <link href="design_system_tokens.css" rel=stylesheet>
 <style>:root{--hue:$1;--spread:${SPREAD:-20};--sat-in:${SAT:-50}}</style>
+<script type=module>await new Promise(r=>setTimeout(r,4_000))</script>
 <body class=undocked id=-blink-dev-tools style="--user-color-source:baseline-default">
 EOF
 }
@@ -141,15 +152,20 @@ function capture {
       --hide-scrollbars \
       --no-sandbox --disable-dev-shm-usage \
       --run-all-compositor-stages-before-draw \
+      --timeout=20000 \
       --user-data-dir="$tmp/cap" \
-      --virtual-time-budget=15000 \
       --window-size=1200,800 \
       --screenshot="$out/screenshot-$1.png" \
       "${@:2}" \
-      "$app"
-    test "$(stat -c%s "$out/screenshot-$1.png" 2>/dev/null || echo 0)" -gt 10000 && return
-    echo "retry $1 ($t) $(stat -c%s "$out/screenshot-$1.png" 2>/dev/null || echo 0)b" >&2
+      "$app" >"$tmp/cap.log" 2>&1
+    bytes=$(stat -c%s "$out/screenshot-$1.png" 2>/dev/null || echo 0)
+    ((bytes > 10000)) && {
+      echo "$bytes bytes $1"
+      return
+    }
+    echo "retry $1 ($t) ${bytes}b" >&2
   done
+  cat "$tmp/cap.log" >&2 || true
   die "tiny screenshot $1"
 }
 

@@ -16,11 +16,13 @@ if [[ ! ${1-} ]]; then
    ${c6}HUES${c0}    ${c2}270 180 90 0${c0}
    ${c6}SPREAD${c0}  ${c2}20${c0}
    ${c6}SAT${c0}     ${c2}50${c0}
+   ${c6}RADIUS${c0}  ${c2}32${c0}
 
  ${c3}${c4}screenshot.sh${c0} ${c3}front_end${c0}
  ${c6}HUES${c0}=${c2}'270 0'${c0} ${c4}screenshot.sh${c0} ${c3}front_end${c0}
  ${c6}SPREAD${c0}=${c2}40${c0} ${c6}SAT${c0}=${c2}20${c0} ${c4}screenshot.sh${c0} ${c3}front_end${c0}
  ${c6}HUES${c0}=${c2}180${c0} ${c6}SPREAD${c0}=${c2}30${c0} ${c6}SAT${c0}=${c2}35${c0} ${c4}screenshot.sh${c0} ${c3}front_end${c0}
+ ${c6}RADIUS${c0}=${c2}48${c0} ${c4}screenshot.sh${c0} ${c3}front_end${c0}
 EOF
   exit 1
 fi
@@ -159,9 +161,21 @@ function capture {
   die "failed screenshot: $name"
 }
 
+function round {
+  local img=$1 r=${RADIUS:-32}
+  local w h
+  read -r w h < <(identify -format '%w %h\n' "$img")
+  convert "$img" \
+    \( -size "${w}x${h}" xc:none \
+       -draw "roundrectangle 0,0 $((w-1)),$((h-1)) $r,$r" \) \
+    -alpha set -compose DstIn -composite "$img"
+}
+
 function pair {
   local n=$1 light=$out/screenshot-$n-light.png dark=$out/screenshot-$n-dark.png
   local w h dx dy
+  round "$light"
+  round "$dark"
   read -r w h < <(identify -format '%w %h\n' "$light")
   dx=$((w * 10 / 100))
   dy=$((h * 10 / 100))

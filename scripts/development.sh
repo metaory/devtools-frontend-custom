@@ -1,8 +1,19 @@
 #!/bin/bash
-# usage: development.sh [-f|--fetch] [tar]
-#   default tar: /tmp/devtools-frontend.tar.zst
-#   -f  download even if tar exists
 set -euo pipefail
+
+c0=$'\e[0m'
+c1=$'\e[31m'
+c2=$'\e[32m'
+c3=$'\e[33m'
+c4=$'\e[34m'
+c5=$'\e[35m'
+c6=$'\e[36m'
+
+cat <<EOF
+ ${c3}${c1}usage${c0} ${c4}development.sh${c3} [-f|--fetch] [tar]
+   ${c5}default tar:${c2} /tmp/devtools-frontend.tar.zst
+   ${c3}-f${c6}  download even if tar exists ${c0}
+EOF
 
 readonly repo='metaory/devtools-frontend-custom'
 readonly dest="$HOME/.local/share/chromium"
@@ -25,7 +36,7 @@ tar=${path:-/tmp/$artifact}
 
 [[ ${fetch-} || -s $tar || ! ${path-} ]] || exit 1
 [[ ${fetch-} || ! -s $tar ]] && {
-  echo 'downloading latest action run artifact in 3s ...'
+  echo -e "\n$c3 downloading latest action run artifact in 3s ... $c0\n"
   sleep 3
 
   run="$(gh run list -R "$repo" \

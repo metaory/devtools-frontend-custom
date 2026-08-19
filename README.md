@@ -1,8 +1,8 @@
 <div align="center">
-  <h3>devtools theme</h3>
+  <h1>devtools theme</h1>
   <img src=".github/assets/banner.png" width="80%" />
   <br>
-  <h4>DevTools theme for Chromium-based browsers</h4>
+  <h3>DevTools theme <br> for Chromium-based browsers</h3>
   <br>
   <img src=".github/assets/screenshot-1.png" width="47%" />&nbsp;&nbsp;<img src=".github/assets/screenshot-2.png" width="47%" />
   <br>

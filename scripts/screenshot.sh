@@ -11,7 +11,7 @@ c6=$'\e[36m'
 
 cat <<EOF
  ${c3}${c1}usage${c0} ${c4}screenshot.sh${c3} front_end
-   ${c5}writes${c2} .github/assets/screenshot-{light,dark}[-hue].png ${c0}
+   ${c5}writes${c2} .github/assets/screenshot-{1..n}-{light,dark}.png ${c0}
    ${c6}HUES${c0}    ${c2}270 180 90 0${c0}
    ${c6}SPREAD${c0}  ${c2}20${c0}
    ${c6}SAT${c0}     ${c2}50${c0}
@@ -141,14 +141,11 @@ function capture {
 
 read -ra hues <<<"${HUES:-270 180 90 0}"
 
-for hue in "${hues[@]}"; do
-  write_app "$hue"
-  capture "light-$hue" --blink-settings=preferredColorScheme=1
-  capture "dark-$hue" --blink-settings=preferredColorScheme=0
-done
-
-for s in light dark; do
-  [[ -f $out/screenshot-$s-270.png ]] && cp "$out/screenshot-$s-270.png" "$out/screenshot-$s.png"
+for i in "${!hues[@]}"; do
+  write_app "${hues[i]}"
+  n=$((i + 1))
+  capture "$n-light" --blink-settings=preferredColorScheme=1
+  capture "$n-dark" --blink-settings=preferredColorScheme=0
 done
 
 ls -lh "$out"/screenshot-*.png

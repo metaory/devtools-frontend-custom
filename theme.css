@@ -10,7 +10,7 @@
       --sys-color-surface3: color-mix(in sRGB, #8b85ff 11%, #0a091c);
       --sys-color-surface2: color-mix(in sRGB, #8b85ff 8%, #0a091c);
       --sys-color-surface1: color-mix(in sRGB, #8b85ff 5%, #0a091c);
-      --sys-color-divider: #5c56d4;
+      --sys-color-divider: #fc56d4;
       --sys-color-base: #16133a;
       --sys-color-surface: #0a091c;
       --sys-color-cdt-base-container: #100e28;

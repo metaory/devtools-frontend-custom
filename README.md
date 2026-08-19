@@ -308,8 +308,10 @@ Point [`scripts/development.sh`](scripts/development.sh) at your repo (`repo='yo
 > Empty or non-digit env uses the defaults below.
 > Push and the Monday cron have no inputs, so they always get those defaults.
 
+<div align="center">
+
 | `env`        | `default` |
-| ------------ | --------- |
+| :----------- | :-------- |
 | `HUE`        | 270       |
 | `HUE_ERROR`  | 10        |
 | `HUE_BLUE`   | 220       |
@@ -320,6 +322,8 @@ Point [`scripts/development.sh`](scripts/development.sh) at your repo (`repo='yo
 | `HUE_PINK`   | 330       |
 | `SPREAD`     | 20        |
 | `SAT`        | 50        |
+
+</div>
 
 > [!TIP]
 > `SAT` is 0-100. 50 is the current ramp, 0 is gray, 100 is 2x chroma

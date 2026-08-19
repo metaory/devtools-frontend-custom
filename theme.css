@@ -38,7 +38,7 @@
       --sys-color-on-base: hsl(285 100% 96%);
       --sys-color-surface: hsl(251 100% 7%);
       --sys-color-cdt-base: hsl(258 100% 12%);
-      --sys-color-cdt-base-container: hsl(56 100% 51%) !important;
+      --sys-color-cdt-base-container: hsl(156 100% 51%);
       /* --sys-color-cdt-base-container: hsl(256 100% 12%); */
       --sys-color-surface1: hsl(260 100% 14%);
       --sys-color-surface2: hsl(266 100% 19%);

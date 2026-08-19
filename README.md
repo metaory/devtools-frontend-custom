@@ -65,8 +65,12 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 ## Usage
 
 ```sh
-{chrome/chromium} --custom-devtools-frontend="{PATH}"
+{chrome/chromium} --custom-devtools-frontend="file://{PATH}"
 ```
+
+> [!IMPORTANT]
+> The value must be a `file://` URL, not a bare path. On Linux and macOS it starts with three slashes: `file:///home/...`
+> A path without the scheme is ignored and Chrome loads the bundled DevTools
 
 > [!NOTE]
 > If Chrome/Chromium is already running, a new launch reuses that process and ignores extra flags
@@ -79,9 +83,9 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 ### Linux:
 
 ```sh
-chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"
-chrome --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"
-google-chrome --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"
+chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
+chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
+google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
 ```
 
 With a custom user profile:
@@ -98,10 +102,10 @@ Or create alias in bash/zsh:
 
 ```sh
 # ~/.bashrc or ~/.zshrc
-alias chromium='/usr/bin/chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
-alias chromium='command chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
-alias chromium='\chromium --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
-alias chrome='google-chrome --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
+alias chromium='/usr/bin/chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+alias chromium='command chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+alias chromium='\chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
 ```
 
 ### macOS
@@ -110,11 +114,11 @@ Chrome is not on `PATH`. Launch the binary, or alias it in `~/.zshrc`:
 
 ```sh
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"
+  --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
 ```
 
 ```sh
-alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --custom-devtools-frontend="$HOME/.local/share/chromium/front_end"'
+alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
 ```
 
 `--user-data-dir="$HOME/.config/chromium-custom"`
@@ -127,7 +131,7 @@ Chrome is not on `PATH`. Launch the binary:
 
 ```powershell
 & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
-  --custom-devtools-frontend="$env:LOCALAPPDATA\chromium\front_end"
+  --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end"
 ```
 
 `--user-data-dir="$env:LOCALAPPDATA\chromium-custom"`
@@ -147,7 +151,7 @@ Chrome is not on `PATH`. Launch the binary:
 ```powershell
 function chrome {
   & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
-    --custom-devtools-frontend="$env:LOCALAPPDATA\chromium\front_end" @args
+    --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end" @args
 }
 ```
 
@@ -159,7 +163,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 Or a shortcut. Target:
 
 ```
-"C:\Program Files\Google\Chrome\Application\chrome.exe" --custom-devtools-frontend=%LOCALAPPDATA%\chromium\front_end
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --custom-devtools-frontend=file:///%LOCALAPPDATA%/chromium/front_end
 ```
 
 ---

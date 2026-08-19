@@ -49,7 +49,11 @@ test -f "$front/devtools_app.html" || die "missing $front/devtools_app.html"
 
 function cleanup {
   status=$?
-  ((status)) && cat "$tmp"/chrome.log "$tmp"/capture.log >&2 2>/dev/null || true
+  ((status)) && {
+    port=$(head -n1 "$tmp/profile/DevToolsActivePort" 2>/dev/null || true)
+    [[ $port ]] && curl -fsS "http://127.0.0.1:$port/json/list" >&2 || true
+    cat "$tmp"/chrome.log "$tmp"/capture.log >&2 2>/dev/null || true
+  }
   [[ ${pid-} ]] && stop "$pid"
   rm -rf "$tmp" || true
 }
@@ -58,6 +62,7 @@ trap cleanup EXIT
 cp "$root/scripts/screenshot.html" "$tmp/index.html"
 
 flags=(
+  --allow-file-access-from-files
   --disable-background-networking
   --disable-extensions
   --disable-gpu
@@ -98,11 +103,10 @@ function chrome_ws {
 
 "$browser" "${flags[@]}" \
   --user-data-dir="$tmp/profile" \
-  --custom-devtools-frontend="file://$front" \
   "file://$tmp/index.html" >"$tmp/chrome.log" 2>&1 &
 pid=$!
 
-ws=$(chrome_ws "$tmp/profile" index.html 80 "$pid") ||
+ws=$(chrome_ws "$tmp/profile" index.html 240 "$pid") ||
   die "no page websocket"
 
 function write_app {
@@ -131,7 +135,6 @@ function capture {
     rm -rf "$cap"
     mkdir -p "$cap"
     "$browser" "${flags[@]}" \
-      --allow-file-access-from-files \
       --force-device-scale-factor=1 \
       --run-all-compositor-stages-before-draw \
       --user-data-dir="$cap" \

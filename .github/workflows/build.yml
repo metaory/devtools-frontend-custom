@@ -6,24 +6,79 @@ on:
       - theme.css
       - upstream
       - scripts/build.sh
+      - scripts/overlay.sh
       - scripts/pin.sh
       - scripts/screenshot.sh
       - .github/workflows/**
   workflow_dispatch:
     inputs:
-      upstream:
-        description: stable, beta, canary, main, or a git ref
-        required: false
       hue:
         description: theme hue
         required: false
         type: number
         default: 270
+      hue_error:
+        description: error hue
+        required: false
+        type: number
+        default: 10
+      hue_blue:
+        description: blue hue
+        required: false
+        type: number
+        default: 220
+      hue_green:
+        description: green hue
+        required: false
+        type: number
+        default: 140
+      hue_orange:
+        description: orange hue
+        required: false
+        type: number
+        default: 30
+      hue_yellow:
+        description: yellow hue
+        required: false
+        type: number
+        default: 50
+      hue_cyan:
+        description: cyan hue
+        required: false
+        type: number
+        default: 190
+      hue_pink:
+        description: pink hue
+        required: false
+        type: number
+        default: 330
+      spread:
+        description: chrome hue spread
+        required: false
+        type: number
+        default: 20
+      sat:
+        description: saturation 0-100 (50 is current)
+        required: false
+        type: number
+        default: 50
   schedule:
     - cron: "0 6 * * 1"
 
 permissions:
   contents: write
+
+env:
+  HUE: ${{ github.event.inputs.hue }}
+  HUE_ERROR: ${{ github.event.inputs.hue_error }}
+  HUE_BLUE: ${{ github.event.inputs.hue_blue }}
+  HUE_GREEN: ${{ github.event.inputs.hue_green }}
+  HUE_ORANGE: ${{ github.event.inputs.hue_orange }}
+  HUE_YELLOW: ${{ github.event.inputs.hue_yellow }}
+  HUE_CYAN: ${{ github.event.inputs.hue_cyan }}
+  HUE_PINK: ${{ github.event.inputs.hue_pink }}
+  SPREAD: ${{ github.event.inputs.spread }}
+  SAT: ${{ github.event.inputs.sat }}
 
 jobs:
   pin:
@@ -37,8 +92,6 @@ jobs:
 
       - id: pin
         run: scripts/pin.sh
-        env:
-          UPSTREAM: ${{ github.event.inputs.upstream }}
 
       - id: check
         name: Skip schedule if ref unchanged
@@ -76,7 +129,6 @@ jobs:
           WORK: ${{ runner.temp }}/devtools-work
           ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
           REF: ${{ needs.pin.outputs.ref }}
-          HUE: ${{ github.event.inputs.hue }}
 
       - uses: actions/upload-artifact@v7
         with:

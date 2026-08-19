@@ -71,8 +71,7 @@ printf 'ref %s\nsha %s\nchromium %s\n' "$ref" "$sha" "$chrome"
 
   {
     echo '/* === theme.css === */'
-    [[ ${HUE-} =~ ^[0-9]+$ ]] || HUE=270
-    sed "s/\"\$HUE\"/$HUE/" "$root/theme.css"
+    bash "$root/scripts/overlay.sh"
   } >>"$tokens"
 
   buildtools/linux64/gn gen out/Default

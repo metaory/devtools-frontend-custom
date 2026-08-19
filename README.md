@@ -1,6 +1,7 @@
 <div align="center">
   <h1>Custom DevTools Frontend</h1>
   <img src=".github/assets/banner.jpg" width="75%" />
+  <br>
   A custom Chromium DevTools frontend distribution
 </div>
 

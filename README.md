@@ -40,6 +40,8 @@ The archive contains the built `front_end/` and applicable upstream and third-pa
 > curl -fsSL -O \
 >   https://github.com/metaory/devtools-frontend-custom/releases/latest/download/devtools-frontend.tar.zst
 > ```
+>
+> PowerShell 5 aliases `curl` to `Invoke-WebRequest`. Use `curl.exe`.
 
 You can place it anywhere
 
@@ -61,9 +63,9 @@ zstd -dc devtools-frontend.tar.zst | tar -xf - -C "$HOME/.local/share/chromium"
 
 ### Windows
 
-`curl.exe`, not `curl`. Windows 11 `tar` reads `.zst`; Windows 10 may not
+Windows 11 `tar` extracts `.zst`. Windows 10 `tar` often cannot.
 
-```sh
+```powershell
 mkdir -Force "$env:LOCALAPPDATA\chromium"
 tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 ```
@@ -152,7 +154,8 @@ Chrome is not on `PATH`. Launch the binary, or alias it in `~/.zshrc`:
 > --user-data-dir="$HOME/.config/chromium-custom"
 > ```
 
-`open -a "Google Chrome"` drops extra flags unless you pass `--args`, and it still reuses a running Chrome
+> [!TIP]
+> `open -a "Google Chrome"` drops extra flags unless you pass `--args`, and it still reuses a running Chrome
 
 ### Windows
 
@@ -176,10 +179,15 @@ Chrome is not on `PATH`. Launch the binary:
 > ```
 
 > [!WARNING]
-> Windows `Set-Alias` cannot pass arguments. `$PROFILE` is the file (same role as `~/.bashrc`)
+> Windows `Set-Alias` cannot pass arguments
+>
+> `$PROFILE` is the file (same role as `~/.bashrc`)
+>
 > PowerShell 7: `Documents\PowerShell\Microsoft.PowerShell_profile.ps1`
 > Windows PowerShell 5.1: `Documents\WindowsPowerShell\`
-> Print it with `$PROFILE`. Create it if missing, paste a function, then reload:
+> Print it with `$PROFILE`.
+>
+> Create it if missing, paste a function, then reload:
 >
 > ```sh
 > # $PROFILE
@@ -207,8 +215,9 @@ Chrome is not on `PATH`. Launch the binary:
 ## Troubleshoot
 
 > [!NOTE]
-> Builds follow Chrome Stable. Compare the version on the [release](https://github.com/metaory/devtools-frontend-custom/releases/latest) to yours at `chrome://version`
-> A large major gap might cause issues.
+> Builds follow Chrome Stable
+> Compare the version on the [release](https://github.com/metaory/devtools-frontend-custom/releases/latest) to yours at `chrome://version`
+> A large major gap might cause issues
 
 ---
 
@@ -217,7 +226,7 @@ Chrome is not on `PATH`. Launch the binary:
 Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes knobs, appends it onto a built frontend, then launches Chromium:
 
 > [!NOTE]
-> With hue and sat overrides:
+> With hue and sat overrides and `ci` action run artifact:
 >
 > ```sh
 > ./scripts/development.sh
@@ -242,7 +251,7 @@ Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes kno
 > - appends the substituted theme onto `design_system_tokens.css`
 
 > [!NOTE]
-> Edit `theme.css` or pass knobs as env, re-run, reload DevTools
+> Edit `theme.css` or pass knobs as `env`, rerun, reload DevTools
 >
 > If that profile is already running
 > the script would only reapplies the theme. Fetch, extract, and launch are the same as before.
@@ -250,8 +259,8 @@ Theme is `theme.css`. [`scripts/overlay.sh`](scripts/overlay.sh) substitutes kno
 > [!NOTE]
 >
 > ```sh
-> ./scripts/development.sh -f                 # download even if the tar exists
-> ./scripts/development.sh /path/to.tar.zst   # use a local archive
+> ./scripts/development.sh -f               # download even if the tar exists
+> ./scripts/development.sh /path/to.tar.zst # use a local archive
 > ```
 
 > [!NOTE]
@@ -313,17 +322,16 @@ Point [`scripts/development.sh`](scripts/development.sh) at your repo (`repo='yo
 | `SAT`        | 50        |
 
 > [!TIP]
-> `SAT` is 0-100. 50 is the current ramp, 0 is gray, 100 is 2x chroma.
-> `SPREAD` is the chrome family offset from `HUE` (secondary `+spread`, tertiary `+2*spread`).
+> `SAT` is 0-100. 50 is the current ramp, 0 is gray, 100 is 2x chroma
+> `SPREAD` is the chrome family offset from `HUE` (secondary `+spread`, tertiary `+2*spread`)
 
 > [!NOTE]
-> Local, without waiting on CI:
+> With hue and sat overrides and `ci` action run artifact:
 >
 > ```sh
-> HUE=200 SAT=35 SPREAD=30 ./scripts/development.sh
+> ./scripts/development.sh
+> HUE=200 SAT=35 ./scripts/development.sh
 > ```
-
-CI knobs: **Run workflow** number fields, same names. A dispatch with custom knobs still moves the `nightly` tag and may commit screenshots. Change a default in `scripts/overlay.sh` and the matching `workflow_dispatch` input default.
 
 ---
 

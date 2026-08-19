@@ -1,20 +1,30 @@
 #!/bin/bash
+# usage: development.sh [-f|--fetch] [tar]
+#   default tar: /tmp/devtools-frontend.tar.zst
+#   -f  download even if tar exists
 set -euo pipefail
 
 readonly repo='metaory/devtools-frontend-custom'
 readonly dest="$HOME/.local/share/chromium"
 readonly artifact='devtools-frontend.tar.zst'
 readonly frontend="file://$dest/front_end"
-readonly root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly tokens="$dest/front_end/design_system_tokens.css"
 readonly base="$dest/design_system_tokens.base.css"
-declare p
+declare p fetch path
 
-tar=${1:-/tmp/$artifact}
+root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
-[[ -s $tar ]] || {
-  [[ ${1-} ]] && exit 1
+for a; do
+  case $a in
+  -f | --fetch) fetch=1 ;;
+  *) path=$a ;;
+  esac
+done
 
+tar=${path:-/tmp/$artifact}
+
+[[ ${fetch-} || -s $tar || ! ${path-} ]] || exit 1
+[[ ${fetch-} || ! -s $tar ]] && {
   echo 'downloading latest action run artifact in 3s ...'
   sleep 3
 

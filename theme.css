@@ -1,19 +1,19 @@
 :root {
   &.baseline-default,
   &.baseline-grayscale {
-    --sys-color-base: #c5ccff;
-    --sys-color-surface: #dce1ff;
-    --sys-color-cdt-base-container: #cdd4ff;
+    --sys-color-base: #c5ccff !important;
+    --sys-color-surface: #dce1ff !important;
+    --sys-color-cdt-base-container: #cdd4ff !important;
     &.theme-with-dark-background {
-      --sys-color-surface5: color-mix(in sRGB, #8b85ff 14%, #0a091c);
-      --sys-color-surface4: color-mix(in sRGB, #8b85ff 12%, #0a091c);
-      --sys-color-surface3: color-mix(in sRGB, #8b85ff 11%, #0a091c);
-      --sys-color-surface2: color-mix(in sRGB, #8b85ff 8%, #0a091c);
-      --sys-color-surface1: color-mix(in sRGB, #8b85ff 5%, #0a091c);
-      --sys-color-divider: #fc56d4;
-      --sys-color-base: #16133a;
-      --sys-color-surface: #0a091c;
-      --sys-color-cdt-base-container: #100e28;
+      --sys-color-surface5: color-mix(in sRGB, #8b85ff 14%, #0a091c) !important;
+      --sys-color-surface4: color-mix(in sRGB, #8b85ff 12%, #0a091c) !important;
+      --sys-color-surface3: color-mix(in sRGB, #8b85ff 11%, #0a091c) !important;
+      --sys-color-surface2: color-mix(in sRGB, #8b85ff 8%, #0a091c) !important;
+      --sys-color-surface1: color-mix(in sRGB, #8b85ff 5%, #0a091c) !important;
+      --sys-color-divider: #fc56d4 !important;
+      --sys-color-base: #16133a !important;
+      --sys-color-surface: #0a091c !important;
+      --sys-color-cdt-base-container: #100e28 !important;
     }
   }
 }

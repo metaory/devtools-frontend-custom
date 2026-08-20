@@ -2,6 +2,7 @@ name: Build
 
 on:
   push:
+    branches: [master]
     paths:
       - apply
       - config.css
@@ -12,6 +13,7 @@ on:
       - scripts/resolve.sh
       - scripts/screenshot.sh
       - scripts/screenshot.mjs
+      - scripts/screenshot.html
       - scripts/test.sh
       - .github/workflows/**
   workflow_dispatch:
@@ -20,52 +22,42 @@ on:
         description: theme hue
         required: false
         type: number
-        default: 270
       hue_error:
         description: error hue
         required: false
         type: number
-        default: 10
       hue_blue:
         description: blue hue
         required: false
         type: number
-        default: 220
       hue_green:
         description: green hue
         required: false
         type: number
-        default: 140
       hue_orange:
         description: orange hue
         required: false
         type: number
-        default: 30
       hue_yellow:
         description: yellow hue
         required: false
         type: number
-        default: 50
       hue_cyan:
         description: cyan hue
         required: false
         type: number
-        default: 190
       hue_pink:
         description: pink hue
         required: false
         type: number
-        default: 330
       spread:
         description: chrome hue spread
         required: false
         type: number
-        default: 20
       sat:
         description: saturation 0-100
         required: false
         type: number
-        default: 50
   schedule:
     - cron: "0 6 * * 1"
 
@@ -74,7 +66,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   CHANNEL: stable
@@ -167,8 +159,11 @@ jobs:
 
   screenshot:
     needs: build
+    if: success() && github.ref == 'refs/heads/master'
     runs-on: ubuntu-22.04
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -187,9 +182,7 @@ jobs:
         env:
           BROWSER: google-chrome-stable
           HUES: 80 180 250 280 320 10
-        run: |
-          eval "$(scripts/overlay.sh parse config.css | sed 's/ /=/')"
-          scripts/screenshot.sh ${{ runner.temp }}/front_end
+        run: scripts/screenshot.sh ${{ runner.temp }}/front_end
 
       - name: publish screenshots
         run: |
@@ -231,9 +224,11 @@ jobs:
 
   publish:
     needs: [resolve, build, screenshot]
-    if: needs.resolve.outputs.skip != 'true'
+    if: success() && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -241,10 +236,10 @@ jobs:
 
       - name: tag nightly
         env:
+          RUN: ${{ github.run_id }}
           SHA: ${{ needs.build.outputs.sha }}
           REF: ${{ needs.resolve.outputs.ref }}
           CHROME: ${{ needs.resolve.outputs.chrome || needs.build.outputs.chrome }}
-          RUN: ${{ github.run_id }}
         run: |
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
             tag -a -f nightly "$GITHUB_SHA" -m "$(printf '%s chromium@%s\n\n%s\nrun@%s\n%s\n' \

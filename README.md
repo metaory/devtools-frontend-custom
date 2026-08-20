@@ -4,7 +4,6 @@
   <br>
   <h3>DevTools theme <br> for Chromium-based browsers</h3>
   <br>
-
   <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-0.png" width="90%" />
   <!-- screenshots -->
   <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-1.png" width="40%" />&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-2.png" width="40%" />
@@ -186,9 +185,21 @@ Fork on GitHub, clone yours, enable **Actions** (disabled on new forks). Point [
 readonly repo='you/devtools-theme'
 ```
 
-First compile: **Actions → Build → Run workflow**, or push `config.css` / `theme.css` / `inspector.css`. Wait for the artifact `devtools-frontend.tar.zst`. `workflow_dispatch` exists only on the default branch.
-
-Fork to change `theme.css`, `inspector.css`, or the Chrome channel. Retint locally by editing [`config.css`](config.css) then `./apply`. CI bakes `config.css` into the artifact. Push and the Monday cron have no workflow inputs, so they use those numbers. A manual Run workflow can override hue inputs for that run only.
+> [!NOTE]
+>
+> - First compile: **Actions → Build → Run workflow**, or push `apply` / `config.css` / `theme.css` / `inspector.css`
+>
+> - Wait for a GitHub **Release** asset `devtools-frontend.tar.zst`. `./apply -f` downloads that Release, not the Actions artifact
+>
+> - To try a Build before you publish, download the workflow artifact and `./apply /path/to.tar.zst`
+>
+> - `workflow_dispatch` exists only on the default branch
+>
+> - Fork to change `theme.css`, `inspector.css`, or the Chrome channel. Re-tint locally by editing [`config.css`](config.css) then `./apply`
+>
+> - CI bakes `config.css` into the artifact. Push and the Monday cron have no workflow inputs, so they use those numbers
+>
+> - A manual Run workflow can override hue inputs for that run only.
 
 ---
 

@@ -5,7 +5,6 @@ on:
     paths:
       - theme.css
       - inspector.css
-      - upstream
       - scripts/build.sh
       - scripts/overlay.sh
       - scripts/resolve.sh
@@ -75,6 +74,8 @@ permissions:
   contents: write
 
 env:
+  CHANNEL: stable
+  SAT: ${{ github.event.inputs.sat }}
   HUE: ${{ github.event.inputs.hue }}
   HUE_ERROR: ${{ github.event.inputs.hue_error }}
   HUE_BLUE: ${{ github.event.inputs.hue_blue }}
@@ -84,7 +85,6 @@ env:
   HUE_CYAN: ${{ github.event.inputs.hue_cyan }}
   HUE_PINK: ${{ github.event.inputs.hue_pink }}
   SPREAD: ${{ github.event.inputs.spread }}
-  SAT: ${{ github.event.inputs.sat }}
 
 jobs:
   resolve:
@@ -92,19 +92,20 @@ jobs:
     timeout-minutes: 2
     outputs:
       ref: ${{ steps.resolve.outputs.ref }}
-      chrome: ${{ steps.resolve.outputs.chrome }}
       skip: ${{ steps.check.outputs.skip }}
+      chrome: ${{ steps.resolve.outputs.chrome }}
     steps:
       - uses: actions/checkout@v7
 
       - id: resolve
+        name: resolve
         run: scripts/resolve.sh
 
       - id: check
         name: Skip schedule if ref unchanged
         env:
-          REF: ${{ steps.resolve.outputs.ref }}
           EVENT: ${{ github.event_name }}
+          REF: ${{ steps.resolve.outputs.ref }}
         run: |
           skip=false
           git fetch origin tag nightly --force || true
@@ -132,12 +133,12 @@ jobs:
           key: work-${{ needs.resolve.outputs.ref }}-${{ hashFiles('scripts/build.sh') }}
 
       - id: build
-        run: scripts/build.sh
         name: build
+        run: scripts/build.sh
         env:
+          REF: ${{ needs.resolve.outputs.ref }}
           WORK: ${{ runner.temp }}/devtools-work
           ARTIFACT: ${{ runner.temp }}/devtools-frontend.tar.zst
-          REF: ${{ needs.resolve.outputs.ref }}
 
       - uses: actions/upload-artifact@v7
         name: upload artifact
@@ -149,8 +150,8 @@ jobs:
 
       - name: tag nightly
         env:
-          REF: ${{ needs.resolve.outputs.ref }}
           SHA: ${{ steps.build.outputs.sha }}
+          REF: ${{ needs.resolve.outputs.ref }}
           CHROME: ${{ needs.resolve.outputs.chrome || steps.build.outputs.chrome }}
         run: |
           git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
@@ -162,7 +163,7 @@ jobs:
   screenshot:
     needs: build
     runs-on: ubuntu-22.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
@@ -179,13 +180,13 @@ jobs:
 
       - name: capture screenshot
         env:
-          BROWSER: google-chrome-stable
-          HUES: 270 180 90 0
-          SPREAD: 20
           SAT: 50
+          SPREAD: 20
+          HUES: 80 180 250 280 320 10
+          BROWSER: google-chrome-stable
         run: scripts/screenshot.sh ${{ runner.temp }}/front_end
 
-      - name: publish
+      - name: publish screenshots
         run: |
           dest=$(mktemp -d)
           cp .github/assets/screenshot-*.png "$dest/"
@@ -208,3 +209,16 @@ jobs:
           )"
           git fetch "$dest" HEAD
           git push -f origin FETCH_HEAD:refs/heads/screenshots
+
+      - name: publish readme
+        run: |
+          git diff --quiet HEAD -- README.md && exit 0
+          git add README.md
+          git -c user.name=github-actions[bot] \
+            -c user.email=github-actions[bot]@users.noreply.github.com \
+            commit -m "$(cat <<'EOF'
+          Update screenshot gallery.
+
+          EOF
+          )"
+          git push

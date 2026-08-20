@@ -4,10 +4,12 @@
   <br>
   <h3>DevTools theme <br> for Chromium-based browsers</h3>
   <br>
-  <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-1.png" width="47%" />&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-2.png" width="47%" />
+  <!-- screenshots -->
+  <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-1.png" width="40%" />&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-2.png" width="40%" />
   <br>
   <br>
-  <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-3.png" width="47%" />&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-4.png" width="47%" />
+  <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-3.png" width="40%" />&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-4.png" width="40%" />
+  <!-- /screenshots -->
 </div>
 
 ---
@@ -19,7 +21,7 @@
 
 ## Download a release
 
-Grab `devtools-frontend.tar.zst` from the [latest GitHub Release](https://github.com/metaory/devtools-frontend-custom/releases/latest)
+Grab `devtools-frontend.tar.zst` from the [latest GitHub Release](https://github.com/metaory/devtools-theme/releases/latest)
 
 The archive contains the built `front_end/` and applicable upstream and third-party license notices
 
@@ -30,7 +32,7 @@ The archive contains the built `front_end/` and applicable upstream and third-pa
 > Download latest release:
 >
 > ```sh
-> gh release download -R metaory/devtools-frontend-custom \
+> gh release download -R metaory/devtools-theme \
 >   -p 'devtools-frontend.tar.zst'
 > ```
 >
@@ -38,7 +40,7 @@ The archive contains the built `front_end/` and applicable upstream and third-pa
 >
 > ```sh
 > curl -fsSL -O \
->   https://github.com/metaory/devtools-frontend-custom/releases/latest/download/devtools-frontend.tar.zst
+>   https://github.com/metaory/devtools-theme/releases/latest/download/devtools-frontend.tar.zst
 > ```
 >
 > PowerShell 5 aliases `curl` to `Invoke-WebRequest`. Use `curl.exe`.
@@ -288,23 +290,6 @@ Modify is `theme.css`
 > [!NOTE]
 > Full `gn`/`ninja` rebuilds (`scripts/build.sh`) run in CI.
 > No local DevTools checkout need
-
-<div align="center">
-
-| `env`        | `default` |
-| :----------- | :-------- |
-| `HUE`        | 270       |
-| `HUE_ERROR`  | 10        |
-| `HUE_BLUE`   | 220       |
-| `HUE_GREEN`  | 140       |
-| `HUE_ORANGE` | 30        |
-| `HUE_YELLOW` | 50        |
-| `HUE_CYAN`   | 190       |
-| `HUE_PINK`   | 330       |
-| `SPREAD`     | 20        |
-| `SAT`        | 50        |
-
-</div>
 
 > [!TIP]
 > `SAT` is 0-100. 50 is the current ramp, 0 is gray, 100 is 2x chroma

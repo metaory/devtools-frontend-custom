@@ -180,17 +180,31 @@ jobs:
       - name: capture screenshot
         env:
           BROWSER: google-chrome-stable
+          HUES: 270 180 90 0
+          SPREAD: 20
+          SAT: 50
         run: scripts/screenshot.sh ${{ runner.temp }}/front_end
 
-      - name: commit
+      - name: publish
         run: |
-          git add .github/assets/screenshot-*.png
-          git add -u .github/assets
-          git diff --cached --quiet && exit 0
-          git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
+          dest=$(mktemp -d)
+          cp .github/assets/screenshot-*.png "$dest/"
+
+          git fetch origin screenshots:refs/tmp/screenshots 2>/dev/null || true
+          if git rev-parse --verify refs/tmp/screenshots >/dev/null 2>&1; then
+            old=$(mktemp -d)
+            git archive refs/tmp/screenshots | tar -C "$old" -xf -
+            diff -q "$dest" "$old" >/dev/null && exit 0
+          fi
+
+          git -C "$dest" init --initial-branch=screenshots
+          git -C "$dest" add screenshot-*.png
+          git -C "$dest" -c user.name=github-actions[bot] \
+            -c user.email=github-actions[bot]@users.noreply.github.com \
             commit -m "$(cat <<'EOF'
           Update DevTools screenshots.
 
           EOF
           )"
-          git push
+          git fetch "$dest" HEAD
+          git push -f origin FETCH_HEAD:refs/heads/screenshots

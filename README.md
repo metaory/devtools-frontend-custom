@@ -4,10 +4,10 @@
   <br>
   <h3>DevTools theme <br> for Chromium-based browsers</h3>
   <br>
-  <img src=".github/assets/screenshot-1.png" width="47%" />&nbsp;&nbsp;<img src=".github/assets/screenshot-2.png" width="47%" />
+  <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-1.png" width="47%" />&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-2.png" width="47%" />
   <br>
   <br>
-  <img src=".github/assets/screenshot-3.png" width="47%" />&nbsp;&nbsp;<img src=".github/assets/screenshot-4.png" width="47%" />
+  <img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-3.png" width="47%" />&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/metaory/devtools-theme/screenshots/screenshot-4.png" width="47%" />
 </div>
 
 ---

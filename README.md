@@ -19,108 +19,22 @@
 ---
 
 <div align="center">
-<a href="#usage">Usage</a> · <a href="#manual-installation">Manual installation</a> · <a href="#troubleshoot">Troubleshoot</a> · <a href="#forks">Forks</a>
+  <a href="#install">Install</a> · <a href="#alias">Alias</a> · <a href="#customize">Customize</a> · <a href="#troubleshoot">Troubleshoot</a> · <a href="#fork">Fork</a>
 </div>
 
 ---
 
-## Usage
-
-Clone this repo. Edit [`config.css`](config.css) (`--hue`, `--sat-in`, `--spread`, `--hue-*`), then `./apply`.
-
-`--sat-in` is 0-100. 50 is the current ramp, 0 is gray, 100 is 2x chroma.
-`--spread` offsets the chrome family from `--hue` (secondary `+spread`, tertiary `+2*spread`).
-
-```sh
-./apply                         # overlay; download and extract if frontend is missing
-./apply -f                      # fetch latest release, extract, overlay
-./apply -o                      # overlay, then open Chrome
-./apply /path/to.tar.zst        # overlay; extract this archive only if frontend is missing
-./apply -f -o /path/to.tar.zst  # download into this path, extract, overlay, open Chrome
-```
-
-Needs `bash`, `curl`, `tar`, `sed`. First run downloads `devtools-frontend.tar.zst` to `$TMPDIR` (usually `/tmp`).
-
-- Linux: dest `$HOME/.local/share/chromium`
-- macOS: same dest. `brew install zstd`
-- Windows: Git Bash, not PowerShell. dest `%LOCALAPPDATA%/chromium`. Windows 11 `tar` reads `.zst`
-
-Without `-o`, `apply` prints the `file://` launch line. `-o` skips exec if Chrome is already running.
-
-For more than hue and sat, edit [`theme.css`](theme.css) (palette formulas from those vars). [`inspector.css`](inspector.css) is checkbox fill. `./apply` overlays those too.
-
-### Alias
-
-Chrome must get `--custom-devtools-frontend` on every launch. Put it in a shell alias (or PowerShell function).
-
-> [!IMPORTANT]
-> The flag value must be a `file://` URL to the extracted `front_end` directory, not a bare path. Linux and macOS: `file:///home/...` (three slashes). Windows: `file:///` plus a forward-slash path.
-> A path without the scheme is ignored and Chrome loads the bundled DevTools.
-
-> [!NOTE]
-> If Chrome is already running, a new launch reuses that process and ignores extra flags.
-> Quit Chrome completely and relaunch, or add `--user-data-dir` with a separate profile.
-
-#### Linux
-
-> [!CAUTION]
-> Do not write `alias chromium='chromium --custom-devtools-frontend=...'`
-> The name calls itself and the shell loops.
-> Skip the alias on the right-hand side: `\chromium` or `command chromium`, or a full path like `/usr/bin/chromium`.
-
-```sh
-# ~/.bashrc or ~/.zshrc
-alias chromium='command chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-```
-
-Separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
-
-#### macOS
-
-```sh
-# ~/.zshrc
-alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
-```
-
-Separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
-
-> [!TIP]
-> `open -a "Google Chrome"` drops extra flags unless you pass `--args`, and it still reuses a running Chrome.
-
-#### Windows
-
-> [!WARNING]
-> `Set-Alias` cannot pass arguments. Use a function in `$PROFILE` (print the path with `$PROFILE`).
-> PowerShell 7: `Documents\PowerShell\Microsoft.PowerShell_profile.ps1`
-> Windows PowerShell 5.1: `Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
-
-```powershell
-if (!(Test-Path $PROFILE)) { New-Item $PROFILE -Force }
-notepad $PROFILE
-```
-
-```powershell
-function chrome {
-  & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
-    --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end" @args
-}
-```
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-. $PROFILE
-```
-
-Separate profile: `--user-data-dir="$env:LOCALAPPDATA\chromium-custom"`
+A custom DevTools UI for Chrome, Chromium, Brave, Edge, and other Chromium-based browsers
 
 ---
 
-## Manual installation
+## Install
 
-Download the prebuilt `devtools-frontend.tar.zst` from the [latest GitHub Release](https://github.com/metaory/devtools-theme/releases/latest). Extract it, then launch with `--custom-devtools-frontend` (or the [alias](#alias) above). No clone. No `apply`.
-
-Each build is the DevTools frontend for current [Chrome Stable](https://chromiumdash.appspot.com/releases?platform=Linux).
+1. Quit Chrome completely if it is already running
+2. Download `devtools-frontend.tar.zst` from the [latest release](https://github.com/metaory/devtools-theme/releases/latest)
+3. Extract it (per OS below)
+4. Launch with `--custom-devtools-frontend`
+5. Open DevTools (F12)
 
 ```sh
 gh release download -R metaory/devtools-theme \
@@ -132,85 +46,273 @@ curl -fsSL -O \
   https://github.com/metaory/devtools-theme/releases/latest/download/devtools-frontend.tar.zst
 ```
 
+To update later: download the newest release and extract into the same directory again
+
+For every launch after this, use an [Alias](#alias)
+
 > [!TIP]
-> Open DevTools on startup with `--auto-open-devtools-for-tabs`.
+> Open DevTools on startup with `--auto-open-devtools-for-tabs`
 
 ### Linux
+
+1. Extract:
 
 ```sh
 mkdir -p "$HOME/.local/share/chromium"
 tar -xaf devtools-frontend.tar.zst -C "$HOME/.local/share/chromium"
+```
 
+2. Launch:
+
+```sh
 chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
+# or
 google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
 ```
 
+3. Open DevTools (F12)
+
 ### macOS
 
-Apple's `tar` has no `zstd` codec. `brew install zstd`.
+1. Install `zstd`:
+
+```sh
+brew install zstd
+```
+
+2. Extract:
 
 ```sh
 mkdir -p "$HOME/.local/share/chromium"
 zstd -dc devtools-frontend.tar.zst | tar -xf - -C "$HOME/.local/share/chromium"
+```
 
+3. Launch:
+
+```sh
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
   --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
 ```
 
+4. Open DevTools (F12)
+
 ### Windows
 
-Windows 11 `tar` extracts `.zst`. Windows 10 `tar` often cannot.
+Use Windows 11 (`tar` reads `.zst`)
 
-PowerShell 5 aliases `curl` to `Invoke-WebRequest`. Download with `curl.exe`:
+1. Download with `curl.exe`:
 
-```powershell
+```sh
 curl.exe -fsSL -O https://github.com/metaory/devtools-theme/releases/latest/download/devtools-frontend.tar.zst
+```
 
+2. Extract:
+
+```sh
 mkdir -Force "$env:LOCALAPPDATA\chromium"
 tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
+```
 
+3. Launch (`PowerShell`):
+
+```sh
 & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
   --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end"
 ```
 
-```cmd
+3. Launch (`cmd`):
+
+```sh
 "C:\Program Files\Google\Chrome\Application\chrome.exe" --custom-devtools-frontend=file:///%LOCALAPPDATA%/chromium/front_end
 ```
+
+4. Open DevTools (`F12`)
+
+---
+
+## Alias
+
+Add `--custom-devtools-frontend` on every Chrome launch so the theme sticks
+
+> [!IMPORTANT]
+>
+> - Use a `file://` URL to the extracted `front_end` directory
+> - Linux and macOS: `file:///home/...` (three slashes). Windows: `file:///` plus a forward-slash path
+> - Without the `file://` scheme, Chrome loads the bundled DevTools
+
+> [!NOTE]
+>
+> - A new launch reuses a running Chrome and ignores extra flags
+> - Quit Chrome completely and relaunch, or add `--user-data-dir` with a separate profile
+
+### Linux
+
+> [!CAUTION]
+>
+> > Write the right-hand side with `command chromium`, `\chromium`, or a full path like `/usr/bin/chromium`
+> > An alias that calls `chromium` by name loops forever
+
+1. Add to `~/.bashrc` or `~/.zshrc`:
+
+```sh
+alias chromium='command chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+# or: alias chromium='\chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+# or: alias chromium='/usr/bin/chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+```
+
+2. Reload the shell
+3. Launch with `chromium` or `chrome`
+
+Optionaly separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
+
+### macOS
+
+1. Add to `~/.zshrc`:
+
+```sh
+alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"'
+```
+
+2. Reload the shell
+3. Launch with `chrome`
+
+Optional separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
+
+> [!TIP]
+> Prefer the binary path above. `open -a "Google Chrome"` needs `--args` for flags, and still reuses a running Chrome
+
+### Windows
+
+> [!WARNING]
+>
+> - Use a function in `$PROFILE` (print the path with `$PROFILE`)
+> - `Set-Alias` cannot pass arguments
+> - `PowerShell 7`: `Documents\PowerShell\Microsoft.PowerShell_profile.ps1`
+> - Windows `PowerShell 5.1`: `Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+
+1. Create or open your profile:
+
+```sh
+if (!(Test-Path $PROFILE)) { New-Item $PROFILE -Force }
+notepad $PROFILE
+```
+
+2. Add:
+
+```sh
+function chrome {
+  & "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+    --custom-devtools-frontend="file:///$($env:LOCALAPPDATA -replace '\\','/')/chromium/front_end" @args
+}
+```
+
+3. Allow the profile and load it:
+
+```sh
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+. $PROFILE
+```
+
+4. Launch with `chrome`
+
+Optional separate profile: `--user-data-dir="$env:LOCALAPPDATA\chromium-custom"`
+
+---
+
+## Customize
+
+Change colors on your machine
+
+1. Clone the repo:
+
+```sh
+git clone https://github.com/metaory/devtools-theme.git
+cd devtools-theme
+```
+
+2. Edit [`config.css`](config.css):
+
+- `--hue`
+- `--sat-in` (0 gray, 50 default, 100 vivid)
+- `--spread` (how far related hues sit from `--hue`)
+- `--hue-error`, `--hue-blue`, `--hue-cyan`, `--hue-pink`, `--hue-green`, `--hue-orange`, `--hue-yellow`
+
+3. Requirements: `bash`, `curl`, `tar`, `sed`
+
+- macOS: `brew install zstd`
+- Windows: run from Git Bash; Windows 11 `tar` reads `.zst`
+
+4. Run `./apply` to put your config on the installed frontend:
+
+```sh
+./apply                         # fetch frontend if missing, then put config on it
+./apply -f                      # fetch latest release, extract, put config on it
+./apply -o                      # put config on it, then open Chrome
+./apply /path/to.tar.zst        # use this archive if frontend is missing
+./apply -f -o /path/to.tar.zst  # fetch into this path, extract, put config on it, open Chrome
+```
+
+Installed path:
+
+- Linux / macOS: `$HOME/.local/share/chromium`
+- Windows: `%LOCALAPPDATA%/chromium`
+
+First run downloads `devtools-frontend.tar.zst` to `$TMPDIR` (usually `/tmp`)
+
+> [!NOTE]
+>
+> - Without `-o`, `./apply` prints the `file://` launch line
+> - With `-o`, launch is skipped if Chrome is already running
+
+5. For deeper changes, edit [`theme.css`](theme.css) or [`inspector.css`](inspector.css), then `./apply` again
+
+> [!TIP]
+> To pull a newer release onto an existing install: `./apply -f`
 
 ---
 
 ## Troubleshoot
 
-Builds follow Chrome Stable. Compare the version on the [release](https://github.com/metaory/devtools-theme/releases/latest) to yours at `chrome://version`. A large major gap might cause issues.
-
-If Chrome ignores `--custom-devtools-frontend`, the URL is wrong or Chrome is already running. See [Usage](#usage) and [Manual installation](#manual-installation).
+- Theme missing after launch: check the `file://` URL, quit Chrome completely, relaunch. See [Install](#install) and [Alias](#alias)
+- Launch ignores the flag: Chrome was already running. Quit it, or use `--user-data-dir` with a separate profile
+- Odd UI: compare the [release](https://github.com/metaory/devtools-theme/releases/latest) version to `chrome://version`. A large major gap can break things
+- macOS extract fails: install `zstd` (`brew install zstd`), then extract again
+- Windows download fails in `PowerShell`: use `curl.exe`, not `curl`
+- Windows extract fails: use Windows 11, or install a `tar` that reads `.zst`
+- `./apply` says missing archive: run it from the repo root, or pass a path to the `.tar.zst`
 
 ---
 
-## Forks
+## Fork
 
-Fork on GitHub, clone yours, enable **Actions** (disabled on new forks). Point [`apply`](apply) at your repo:
+Publish your own themed release
+
+1. Fork on GitHub
+2. Clone your fork:
+
+```sh
+git clone https://github.com/you/devtools-theme.git
+cd devtools-theme
+```
+
+3. Enable **Actions** (new forks start with Actions off)
+4. Point [`apply`](apply) at your repo:
 
 ```sh
 readonly repo='you/devtools-theme'
 ```
 
-> [!NOTE]
->
-> - First compile: **Actions → Build → Run workflow**, or push `apply` / `config.css` / `theme.css` / `inspector.css`
-> - Wait for a GitHub **Release** asset `devtools-frontend.tar.zst`. `./apply -f` downloads that Release, not the Actions artifact
-> - To try a Build before you publish, download the workflow artifact and `./apply /path/to.tar.zst`
-> - `workflow_dispatch` exists only on the default branch
-> - Fork to change `theme.css`, `inspector.css`, or the Chrome channel. Re-tint locally by editing [`config.css`](config.css) then `./apply`
-> - CI bakes `config.css` into the artifact. Push and the Monday cron have no workflow inputs, so they use those numbers
-> - A manual Run workflow can override hue inputs for that run only.
+5. Push `config.css`, `theme.css`, or `inspector.css`, or run **Actions → Build → Run workflow**
+6. Wait until Build finishes and a **Release** lists `devtools-frontend.tar.zst`
+7. Run `./apply -f`
 
 ---
 
 ## License
 
 This project is based on [Chromium DevTools](https://github.com/ChromeDevTools/devtools-frontend)
-and is distributed under the [BSD-3-Clause](LICENSE) license.
+and is distributed under the [BSD-3-Clause](LICENSE) license
 
 The release archive contains a modified build of the Chromium DevTools frontend
-and includes the upstream license and third-party notices.
+and includes the upstream license and third-party notices

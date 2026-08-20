@@ -185,16 +185,17 @@ jobs:
 
       - name: capture screenshot
         env:
-          SAT: 50
-          SPREAD: 20
-          HUES: 80 180 250 280 320 10
           BROWSER: google-chrome-stable
-        run: scripts/screenshot.sh ${{ runner.temp }}/front_end
+          HUES: 80 180 250 280 320 10
+        run: |
+          eval "$(scripts/overlay.sh parse config.css | sed 's/ /=/')"
+          scripts/screenshot.sh ${{ runner.temp }}/front_end
 
       - name: publish screenshots
         run: |
           dest=$(mktemp -d)
           cp .github/assets/screenshot-*.png "$dest/"
+          awk '/<!-- screenshots -->/,/<!-- \/screenshots -->/' README.md >"$dest/README.md"
 
           git fetch origin screenshots:refs/tmp/screenshots 2>/dev/null || true
           if git rev-parse --verify refs/tmp/screenshots >/dev/null 2>&1; then
@@ -204,7 +205,7 @@ jobs:
           fi
 
           git -C "$dest" init --initial-branch=screenshots
-          git -C "$dest" add screenshot-*.png
+          git -C "$dest" add screenshot-*.png README.md
           git -C "$dest" -c user.name=github-actions[bot] \
             -c user.email=github-actions[bot]@users.noreply.github.com \
             commit -m "$(cat <<'EOF'

@@ -29,8 +29,10 @@ flowchart LR
    Schedule skips if `nightly`'s subject already has that ref.
    `scripts/test.sh` verifies local apply idempotence and failed-archive safety.
    Then `scripts/build.sh` uploads `devtools-frontend.tar.zst`.
-   Screenshots publish to the `screenshots` branch only if PNG bytes changed.
-   README gallery between `<!-- screenshots -->` markers updates only if that block changed.
+   Screenshots capture `screenshot-0` at the default `--hue` from `config.css`, then the `HUES` gallery.
+   They publish to the `screenshots` branch only if PNGs or the gallery README changed.
+   That branch README is the gallery block extracted from main `<!-- screenshots -->` markers.
+   Main README gallery between those markers updates only if that block changed.
    Only then does `publish` force-push annotated `nightly` at that run's `$GITHUB_SHA`;
    its body records the exact GitHub Actions run ID.
 4. Wait until Build is green and `nightly` moved. Local check: `./apply -f`.

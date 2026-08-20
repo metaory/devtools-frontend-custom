@@ -8,13 +8,13 @@ on:
       - config.css
       - theme.css
       - inspector.css
+      - scripts/test.sh
       - scripts/build.sh
       - scripts/overlay.sh
       - scripts/resolve.sh
       - scripts/screenshot.sh
       - scripts/screenshot.mjs
       - scripts/screenshot.html
-      - scripts/test.sh
       - .github/workflows/**
   workflow_dispatch:
     inputs:

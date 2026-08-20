@@ -3,6 +3,7 @@ name: Build
 on:
   push:
     paths:
+      - config.css
       - theme.css
       - inspector.css
       - scripts/build.sh

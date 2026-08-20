@@ -21,10 +21,10 @@ flowchart LR
   release --> draft
 ```
 
-1. Edit `theme.css` (or `inspector.css`, overlay/build scripts). Preview without CI: `./scripts/development.sh` overlays the last successful Build artifact under `~/.local/share/chromium`. Hue knobs are local-only unless you change `scripts/overlay.sh`.
-2. Commit and push to the default branch. Build runs only if the path is in its filter (`theme.css`, `inspector.css`, listed scripts, `.github/workflows/**`). README-only pushes do not build. Monday 06:00 UTC cron also builds. Manual **Actions → Build → Run workflow** can override hues for that run only; push and cron always bake `overlay.sh` defaults. `workflow_dispatch` exists only on the default branch.
+1. Edit `config.css`, `theme.css`, or `inspector.css`. Preview without CI: `./apply` overlays the latest release tar under `~/.local/share/chromium`. Hue numbers come from `config.css`. Push/cron bake that file. A manual Run workflow can override knobs for that run only.
+2. Commit and push to the default branch. Build runs only if the path is in its filter (`config.css`, `theme.css`, `inspector.css`, listed scripts, `.github/workflows/**`). README-only pushes do not build. Monday 06:00 UTC cron also builds. Manual **Actions → Build → Run workflow** can override knobs for that run only; push and cron always bake `config.css`. `workflow_dispatch` exists only on the default branch.
 3. Build: `scripts/resolve.sh` uses `CHANNEL` (`stable`) and pins the Chrome DevTools ref. Schedule skips if `nightly`'s subject already has that ref. Then `scripts/build.sh`, upload `devtools-frontend.tar.zst`, force-push annotated `nightly` on that run's `$GITHUB_SHA` with subject `$REF chromium@$CHROME`. Screenshots publish to the `screenshots` branch only if PNG bytes changed. README gallery between `<!-- screenshots -->` markers updates only if that block changed.
-4. Wait until Build is green and `nightly` moved. Local check: `./scripts/development.sh -f`.
+4. Wait until Build is green and `nightly` moved. Local check: `./apply -f`.
 5. **Actions → Release → Run workflow**. Pick `bump` (`rc` default, or patch / minor / major), optional `notes`. No version string.
 6. Release peels `nightly^{}`, finds a successful Build run with the same `headSha` (last 30), downloads that artifact, bumps the next `v*` from the latest `v[0-9]*` tag, creates a **draft** `gh release` with `--target` that SHA. `rc` tags are `--prerelease`. It does not push its own git tag beyond what `gh release create` does.
 7. Open the draft on GitHub, review notes and the tar, publish. Users grab `devtools-frontend.tar.zst` from the published release.

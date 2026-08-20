@@ -1,4 +1,4 @@
-## Typical development workflow
+# Typical development workflow
 
 Local iterate, then CI bakes `nightly`, draft release manually.
 
@@ -8,14 +8,16 @@ Release never rebuilds. It re-tags the last successful Build.
 flowchart LR
   theme[theme.css]
   push[push default branch]
+  test[apply smoke test]
   build[Build workflow]
+  screenshot[screenshot workflow]
   nightly[nightly tag]
   artifact[Build artifact]
   release[Release workflow]
   draft[draft GitHub release]
-  theme --> push --> build
+  theme --> push --> test --> build
   build --> artifact
-  build --> nightly
+  artifact --> screenshot --> nightly
   nightly --> release
   artifact --> release
   release --> draft
@@ -23,10 +25,22 @@ flowchart LR
 
 1. Edit `config.css`, `theme.css`, or `inspector.css`. Preview without CI: `./apply` overlays the latest release tar under `~/.local/share/chromium`. Hue numbers come from `config.css`. Push/cron bake that file. A manual Run workflow can override knobs for that run only.
 2. Commit and push to the default branch. Build runs only if the path is in its filter (`config.css`, `theme.css`, `inspector.css`, listed scripts, `.github/workflows/**`). README-only pushes do not build. Monday 06:00 UTC cron also builds. Manual **Actions → Build → Run workflow** can override knobs for that run only; push and cron always bake `config.css`. `workflow_dispatch` exists only on the default branch.
-3. Build: `scripts/resolve.sh` uses `CHANNEL` (`stable`) and pins the Chrome DevTools ref. Schedule skips if `nightly`'s subject already has that ref. Then `scripts/build.sh`, upload `devtools-frontend.tar.zst`, force-push annotated `nightly` on that run's `$GITHUB_SHA` with subject `$REF chromium@$CHROME`. Screenshots publish to the `screenshots` branch only if PNG bytes changed. README gallery between `<!-- screenshots -->` markers updates only if that block changed.
+3. Build: `scripts/resolve.sh` uses `CHANNEL` (`stable`) and pins the Chrome DevTools ref.
+   Schedule skips if `nightly`'s subject already has that ref.
+   `scripts/test.sh` verifies local apply idempotence and failed-archive safety.
+   Then `scripts/build.sh` uploads `devtools-frontend.tar.zst`.
+   Screenshots publish to the `screenshots` branch only if PNG bytes changed.
+   README gallery between `<!-- screenshots -->` markers updates only if that block changed.
+   Only then does `publish` force-push annotated `nightly` at that run's `$GITHUB_SHA`;
+   its body records the exact GitHub Actions run ID.
 4. Wait until Build is green and `nightly` moved. Local check: `./apply -f`.
 5. **Actions → Release → Run workflow**. Pick `bump` (`rc` default, or patch / minor / major), optional `notes`. No version string.
-6. Release peels `nightly^{}`, finds a successful Build run with the same `headSha` (last 30), downloads that artifact, bumps the next `v*` from the latest `v[0-9]*` tag, creates a **draft** `gh release` with `--target` that SHA. `rc` tags are `--prerelease`. It does not push its own git tag beyond what `gh release create` does.
+6. Release peels `nightly^{}`, reads `run@` from its body, downloads that artifact,
+   and bumps the next `v*` from the latest `v[0-9]*` tag.
+   It makes an empty commit on the nightly SHA, pushes an annotated `v*` tag there,
+   then `gh release create` (no `--target`) attaches the **draft** to that tag.
+   Empty commit is required: `GITHUB_TOKEN` cannot tag a commit that touched
+   `.github/workflows/**`. `rc` tags are `--prerelease`.
 7. Open the draft on GitHub, review notes and the tar, publish. Users grab `devtools-frontend.tar.zst` from the published release.
 
 Rules:

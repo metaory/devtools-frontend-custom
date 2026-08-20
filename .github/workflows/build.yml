@@ -3,6 +3,7 @@ name: Build
 on:
   push:
     paths:
+      - apply
       - config.css
       - theme.css
       - inspector.css
@@ -11,6 +12,7 @@ on:
       - scripts/resolve.sh
       - scripts/screenshot.sh
       - scripts/screenshot.mjs
+      - scripts/test.sh
       - .github/workflows/**
   workflow_dispatch:
     inputs:
@@ -114,11 +116,25 @@ jobs:
           [[ $EVENT == schedule && -n $last && ${last%% *} == "$REF" ]] && skip=true
           printf 'skip=%s\n' "$skip" | tee -a "$GITHUB_OUTPUT"
 
-  build:
+  test:
     needs: resolve
+    if: needs.resolve.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: apply smoke test
+        run: scripts/test.sh
+
+  build:
+    needs: [resolve, test]
     if: needs.resolve.outputs.skip != 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 20
+    outputs:
+      sha: ${{ steps.build.outputs.sha }}
+      chrome: ${{ steps.build.outputs.chrome }}
 
     steps:
       - uses: actions/checkout@v7
@@ -149,18 +165,6 @@ jobs:
           if-no-files-found: error
           path: ${{ runner.temp }}/devtools-frontend.tar.zst
 
-      - name: tag nightly
-        env:
-          SHA: ${{ steps.build.outputs.sha }}
-          REF: ${{ needs.resolve.outputs.ref }}
-          CHROME: ${{ needs.resolve.outputs.chrome || steps.build.outputs.chrome }}
-        run: |
-          git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
-            tag -a -f nightly "$GITHUB_SHA" -m "$(printf '%s chromium@%s\n\n%s\n%s\n' \
-              "$REF" "$CHROME" "$SHA" \
-              "$(git log -1 --format=%s "$GITHUB_SHA")")"
-          git push -f origin refs/tags/nightly
-
   screenshot:
     needs: build
     runs-on: ubuntu-22.04
@@ -168,7 +172,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
 
       - uses: actions/download-artifact@v8
         name: download artifact
@@ -223,3 +227,26 @@ jobs:
           EOF
           )"
           git push
+
+  publish:
+    needs: [resolve, build, screenshot]
+    if: needs.resolve.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: tag nightly
+        env:
+          SHA: ${{ needs.build.outputs.sha }}
+          REF: ${{ needs.resolve.outputs.ref }}
+          CHROME: ${{ needs.resolve.outputs.chrome || needs.build.outputs.chrome }}
+          RUN: ${{ github.run_id }}
+        run: |
+          git -c user.name=github-actions[bot] -c user.email=github-actions[bot]@users.noreply.github.com \
+            tag -a -f nightly "$GITHUB_SHA" -m "$(printf '%s chromium@%s\n\n%s\nrun@%s\n%s\n' \
+              "$REF" "$CHROME" "$SHA" "$RUN" \
+              "$(git log -1 --format=%s "$GITHUB_SHA")")"
+          git push -f origin refs/tags/nightly

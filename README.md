@@ -56,7 +56,7 @@ gh release download -R metaory/devtools-theme \
 or
 
 ```sh
-curl -fsSL -O \
+curl -fL --progress-bar -O \
   https://github.com/metaory/devtools-theme/releases/latest/download/devtools-frontend.tar.zst
 ```
 
@@ -117,7 +117,7 @@ Use Windows 11 (`tar` reads `.zst`)
 1. Download with `curl.exe`:
 
 ```sh
-curl.exe -fsSL -O https://github.com/metaory/devtools-theme/releases/latest/download/devtools-frontend.tar.zst
+curl.exe -fL --progress-bar -O https://github.com/metaory/devtools-theme/releases/latest/download/devtools-frontend.tar.zst
 ```
 
 2. Extract:
@@ -282,11 +282,12 @@ cd devtools-theme
 4. Run `./apply` to put your configuration on the local theme:
 
 ```sh
-./apply                        # apply config; (on first run, download latest and extract)
-./apply -f                     # force download latest, extract, apply config
-./apply -o                     # apply config, open browser
-./apply /path/to.tar.zst       # apply config; (if front_end missing, extract this archive)
-./apply -f -o /path/to.tar.zst # force download to path, extract, apply config, open browser
+./apply                        # overlay, fetch if needed
+./apply -h                     # print usage and exit
+./apply -f                     # force fetch + extract
+./apply -o                     # overlay, open browser
+./apply /path/to.tar.zst       # extract this archive if needed
+./apply -f -o /path/to.tar.zst # fetch to path, extract, open
 ```
 
 Theme path:
@@ -317,7 +318,7 @@ First run downloads `devtools-frontend.tar.zst` to `$TMPDIR` (usually `/tmp`)
 - Linux extract fails: install `zstd`, or use the `zstd -dc … | tar` form under [Install](#install)
 - Windows download fails in `PowerShell`: use `curl.exe`, not `curl`
 - Windows extract fails: use Windows 11, or install a `tar` that reads `.zst`
-- `./apply` says missing archive: run it from the repo root, or pass a path to the `.tar.zst`
+- `./apply` says missing archive: the path you passed is missing or empty. Omit the path to download, or pass a real `.tar.zst`
 - Undo: remove the alias or PowerShell function, delete `$HOME/.local/share/chromium/front_end` (Windows: `%LOCALAPPDATA%\chromium\front_end`), relaunch without the flag
 
 ---

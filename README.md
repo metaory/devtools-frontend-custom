@@ -25,30 +25,35 @@
   <br>
   <br>
   <p>
-    <a href="https://github.com/metaory/devtools-theme/releases/latest"><img src="https://img.shields.io/github/v/release/metaory/devtools-theme?label=release" alt="latest release" /></a>
-    <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSD--3--Clause-blue" alt="BSD-3-Clause" /></a>
+    <a href="https://github.com/metaory/devtools-theme/releases/tag/nightly"><img alt="Nightly" src="https://img.shields.io/github/check-suites/metaory/devtools-theme/nightly?style=flat&label=nightly&labelColor=31a"></a>
+    <a href="https://github.com/metaory/devtools-theme/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/metaory/devtools-theme?style=flat&label=release&labelColor=31a&color=61E"></a>
+    <a href="https://github.com/metaory/devtools-theme/releases/latest"><img alt="Release Date" src="https://img.shields.io/github/release-date/metaory/devtools-theme?style=flat&label=date&labelColor=31a&color=61E"></a>
+    <a href="https://github.com/metaory/devtools-theme/releases/latest"><img alt="Chromium version" src="https://img.shields.io/badge/dynamic/regex?style=flat&url=https%3A%2F%2Fgithub.com%2Fmetaory%2Fdevtools-theme%2Freleases.atom&search=chromium%40(%5B0-9.%5D%2B)&replace=%241&logo=googlechrome&logoColor=bae&label=&color=31a&labelColor=31a"></a>
+    <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/metaory/devtools-theme?style=flat&label=license&labelColor=31a&color=61E"></a>
   </p>
 </div>
 
 ---
 
-A custom DevTools UI for Chrome, Chromium, Brave, Edge, and other Chromium-based browsers
+This repo ships a themed DevTools UI for `--custom-devtools-frontend`
 
-Chrome's `--custom-devtools-frontend` points at a local `front_end` path. This repo ships a themed DevTools build for that flag. Releases track Chrome **stable**
+Releases track Chrome **stable**
 
 ---
 
 ## Install
 
-1. Quit Chrome completely if it is already running
-2. Download `devtools-frontend.tar.zst` from the [latest release](https://github.com/metaory/devtools-theme/releases/latest)
-3. Extract and launch per OS below
-4. Open DevTools (F12). UI should match the screenshots above
+1. Download `devtools-frontend.tar.zst` from the [latest release](https://github.com/metaory/devtools-theme/releases/latest)
+2. Extract per OS below
+3. Quit the browser completely if it is already running, then launch per OS below
+4. Open DevTools (`F12`). UI should match the screenshots above
 
 ```sh
 gh release download -R metaory/devtools-theme \
   -p 'devtools-frontend.tar.zst'
 ```
+
+or
 
 ```sh
 curl -fsSL -O \
@@ -56,13 +61,6 @@ curl -fsSL -O \
 ```
 
 To update later: download the newest release and extract into the same directory again
-
-For every launch after this, use an [Alias](#alias)
-
-Other Chromium browsers (Brave, Edge, …): same `--custom-devtools-frontend` flag and `file://…/front_end` path; swap only the binary name
-
-> [!TIP]
-> Open DevTools on startup with `--auto-open-devtools-for-tabs`
 
 ### Linux
 
@@ -73,7 +71,11 @@ mkdir -p "$HOME/.local/share/chromium"
 tar -xaf devtools-frontend.tar.zst -C "$HOME/.local/share/chromium"
 ```
 
-If extract fails, install `zstd`, or use: `zstd -dc devtools-frontend.tar.zst | tar -xf - -C "$HOME/.local/share/chromium"`
+If extract fails, install `zstd`, or use:
+
+```sh
+zstd -dc devtools-frontend.tar.zst | tar -xf - -C "$HOME/.local/share/chromium"
+```
 
 2. Launch:
 
@@ -81,7 +83,7 @@ If extract fails, install `zstd`, or use: `zstd -dc devtools-frontend.tar.zst | 
 chromium --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
 # or
 google-chrome --custom-devtools-frontend="file://$HOME/.local/share/chromium/front_end"
-# brave-browser / microsoft-edge: same flag and path
+# brave-browser / microsoft-edge / vivaldi / … : same flag and path
 ```
 
 ### macOS
@@ -122,6 +124,7 @@ curl.exe -fsSL -O https://github.com/metaory/devtools-theme/releases/latest/down
 
 ```sh
 mkdir -Force "$env:LOCALAPPDATA\chromium"
+# e.g. C:\Users\you\AppData\Local\chromium
 tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
 ```
 
@@ -139,28 +142,49 @@ tar -xaf devtools-frontend.tar.zst -C "$env:LOCALAPPDATA\chromium"
      "C:\Program Files\Google\Chrome\Application\chrome.exe" --custom-devtools-frontend=file:///%LOCALAPPDATA%/chromium/front_end
      ```
 
+     Absolute path:
+
+     ```sh
+     "C:\Program Files\Google\Chrome\Application\chrome.exe" --custom-devtools-frontend=file:///C:/Users/you/AppData/Local/chromium/front_end
+     ```
+
+---
+
+> [!NOTE]
+> Other Chromium browsers (Brave, Edge, Vivaldi, …):
+>
+> Same `--custom-devtools-frontend` flag and `file://…/front_end` path;
+>
+> Swap only the binary name
+
+For every launch after this, use an [Alias](#alias)
+
+> [!TIP]
+> Open DevTools on startup with `--auto-open-devtools-for-tabs`
+
 ---
 
 ## Alias
 
-Add `--custom-devtools-frontend` on every Chrome launch so the theme sticks
+Add `--custom-devtools-frontend` on every browser launch so the theme sticks
 
 > [!IMPORTANT]
 >
 > - Use a `file://` URL to the extracted `front_end` directory
 > - Linux and macOS: `file:///home/...` (three slashes). Windows: `file:///` plus a forward-slash path
-> - Without the `file://` scheme, Chrome loads the bundled DevTools
+> - Without the `file://` scheme, the browser loads the bundled DevTools
 
 > [!NOTE]
 >
-> - A new launch reuses a running Chrome and ignores extra flags
-> - Quit Chrome completely and relaunch, or add `--user-data-dir` with a separate profile
+> - A new launch reuses a running browser and ignores extra flags
+> - Quit the browser completely and relaunch, or add `--user-data-dir` with a separate profile
 
 ### Linux
 
 > [!CAUTION]
 >
 > Write the right-hand side with `command chromium`, `\chromium`, or a full path like `/usr/bin/chromium`
+>
 > An alias that calls `chromium` by name loops forever
 
 1. Add to `~/.bashrc` or `~/.zshrc`:
@@ -173,7 +197,7 @@ alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/shar
 ```
 
 2. Reload the shell
-3. Launch with `chromium` or `chrome`
+3. Launch with `chromium` or `chrome` or …
 
 Optional separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
 
@@ -191,7 +215,7 @@ alias chrome='"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --c
 Optional separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
 
 > [!TIP]
-> Prefer the binary path above. `open -a "Google Chrome"` needs `--args` for flags, and still reuses a running Chrome
+> Prefer the binary path above. `open -a "Google Chrome"` needs `--args` for flags, and still reuses a running browser
 
 ### Windows
 
@@ -200,7 +224,7 @@ Optional separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
 > - Use a function in `$PROFILE` (print the path with `$PROFILE`)
 > - `Set-Alias` cannot pass arguments
 > - `PowerShell 7`: `Documents\PowerShell\Microsoft.PowerShell_profile.ps1`
-> - Windows `PowerShell 5.1`: `Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+> - `PowerShell 5.1`: `Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
 
 1. Create or open your profile:
 
@@ -225,7 +249,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 . $PROFILE
 ```
 
-4. Launch with `chrome`
+4. Launch with `chrome` / `chromium` / …
 
 Optional separate profile: `--user-data-dir="$env:LOCALAPPDATA\chromium-custom"`
 
@@ -252,19 +276,20 @@ cd devtools-theme
 3. Requirements: `bash`, `curl`, `tar`, `sed`
 
 - macOS: `brew install zstd`
-- Windows: run from Git Bash; Windows 11 `tar` reads `.zst`
+- Windows: run from Git Bash;
+- Windows 11 `tar` reads `.zst`
 
-4. Run `./apply` to put your config on the install:
+4. Run `./apply` to put your configuration on the local theme:
 
 ```sh
-./apply                         # overlay; if install missing, download archive and extract
-./apply -f                      # download latest archive, extract, overlay
-./apply -o                      # overlay, then open Chrome
-./apply /path/to.tar.zst        # if install missing, extract this archive (must exist)
-./apply -f -o /path/to.tar.zst  # download latest into this archive file, extract, overlay, open Chrome
+./apply                        # apply config; (on first run, download latest and extract)
+./apply -f                     # force download latest, extract, apply config
+./apply -o                     # apply config, open browser
+./apply /path/to.tar.zst       # apply config; (if front_end missing, extract this archive)
+./apply -f -o /path/to.tar.zst # force download to path, extract, apply config, open browser
 ```
 
-Installed path:
+Theme path:
 
 - Linux / macOS: `$HOME/.local/share/chromium`
 - Windows: `%LOCALAPPDATA%/chromium`
@@ -273,20 +298,20 @@ First run downloads `devtools-frontend.tar.zst` to `$TMPDIR` (usually `/tmp`)
 
 > [!NOTE]
 >
-> - Without `-o`, `./apply` prints the `file://` launch line
-> - With `-o`, launch is skipped if Chrome is already running
+> - Without `-o`, prints the `file://` launch line
+> - With `-o`, opens the browser; skipped if already running
 
 5. For deeper changes, edit [`theme.css`](theme.css) (palette) or [`inspector.css`](inspector.css) (checkbox fill), then `./apply` again
 
 > [!TIP]
-> To pull a newer release onto an existing install: `./apply -f`
+> To pull a newer release onto an existing theme: `./apply -f`
 
 ---
 
 ## Troubleshoot
 
-- Theme missing after launch: check the `file://` URL, quit Chrome completely, relaunch. See [Install](#install) and [Alias](#alias)
-- Launch ignores the flag: Chrome was already running. Quit it, or use `--user-data-dir` with a separate profile
+- Theme missing after launch: check the `file://` URL, quit the browser completely, relaunch. See [Install](#install) and [Alias](#alias)
+- Launch ignores the flag: the browser was already running. Quit it, or use `--user-data-dir` with a separate profile
 - Odd UI: compare the [release](https://github.com/metaory/devtools-theme/releases/latest) version to `chrome://version`. A large major gap can break things
 - macOS extract fails: install `zstd` (`brew install zstd`), then extract again
 - Linux extract fails: install `zstd`, or use the `zstd -dc … | tar` form under [Install](#install)

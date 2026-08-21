@@ -181,6 +181,27 @@ Add `--custom-devtools-frontend` on every browser launch so the theme sticks
 
 ### Linux
 
+<details>
+<summary>Arch Linux only: <code>chromium-flags.conf</code></summary>
+
+Arch Linux users can use this file to set flags permanently
+
+Not a Chromium feature.
+
+Arch packages wrap the binary and read extra flags from a file
+
+Other distros ignore it
+
+`~/.config/chromium-flags.conf` (Chrome AUR: `~/.config/chrome-flags.conf`)
+
+Unquoted path. `$HOME` is not expanded in the file.
+
+```sh
+printf '%s\n' "--custom-devtools-frontend=file://$HOME/.local/share/chromium/front_end" > ~/.config/chromium-flags.conf
+```
+
+</details>
+
 > [!CAUTION]
 >
 > Write the right-hand side with `command chromium`, `\chromium`, or a full path like `/usr/bin/chromium`
@@ -313,6 +334,7 @@ First run downloads `devtools-frontend.tar.zst` to `$TMPDIR` (usually `/tmp`)
 
 - Theme missing after launch: check the `file://` URL, quit the browser completely, relaunch. See [Install](#install) and [Alias](#alias)
 - Launch ignores the flag: the browser was already running. Quit it, or use `--user-data-dir` with a separate profile
+- `chromium-flags.conf` ignored: Arch packages only. See [Alias](#alias)
 - Odd UI: compare the [release](https://github.com/metaory/devtools-theme/releases/latest) version to `chrome://version`. A large major gap can break things
 - macOS extract fails: install `zstd` (`brew install zstd`), then extract again
 - Linux extract fails: install `zstd`, or use the `zstd -dc … | tar` form under [Install](#install)

@@ -22,6 +22,14 @@ on:
         description: theme hue
         required: false
         type: number
+      sat:
+        description: saturation 0-100
+        required: false
+        type: number
+      spread:
+        description: chrome hue spread
+        required: false
+        type: number
       hue_error:
         description: error hue
         required: false
@@ -50,14 +58,6 @@ on:
         description: pink hue
         required: false
         type: number
-      spread:
-        description: chrome hue spread
-        required: false
-        type: number
-      sat:
-        description: saturation 0-100
-        required: false
-        type: number
   schedule:
     - cron: "0 6 * * 1"
 
@@ -72,14 +72,14 @@ env:
   CHANNEL: stable
   SAT: ${{ github.event.inputs.sat }}
   HUE: ${{ github.event.inputs.hue }}
-  HUE_ERROR: ${{ github.event.inputs.hue_error }}
+  SPREAD: ${{ github.event.inputs.spread }}
   HUE_BLUE: ${{ github.event.inputs.hue_blue }}
+  HUE_CYAN: ${{ github.event.inputs.hue_cyan }}
+  HUE_PINK: ${{ github.event.inputs.hue_pink }}
   HUE_GREEN: ${{ github.event.inputs.hue_green }}
   HUE_ORANGE: ${{ github.event.inputs.hue_orange }}
   HUE_YELLOW: ${{ github.event.inputs.hue_yellow }}
-  HUE_CYAN: ${{ github.event.inputs.hue_cyan }}
-  HUE_PINK: ${{ github.event.inputs.hue_pink }}
-  SPREAD: ${{ github.event.inputs.spread }}
+  HUE_ERROR: ${{ github.event.inputs.hue_error }}
 
 jobs:
   resolve:

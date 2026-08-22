@@ -4,7 +4,6 @@ on:
   push:
     branches: [master]
     paths:
-      - apply
       - config.css
       - theme.css
       - inspector.css

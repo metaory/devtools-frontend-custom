@@ -201,13 +201,6 @@ alias chrome='google-chrome --custom-devtools-frontend="file://$HOME/.local/shar
 
 Optional separate profile: `--user-data-dir="$HOME/.config/chromium-custom"`
 
-<details>
-<summary>Arch Linux</summary>
-
-Arch Linux users can use this file to set flags permanently:
-
-`~/.config/chromium-flags.conf`
-
 > [!IMPORTANT]
 > This is Not a Chromium feature
 >
@@ -215,19 +208,26 @@ Arch Linux users can use this file to set flags permanently:
 >
 > Other distros ignore it
 
+<details>
+<summary>Arch Linux</summary>
+
+Arch Linux users can use this file to set flags permanently:
+
+`~/.config/chromium-flags.conf`
+
 - chromium: `~/.config/chromium-flags.conf`
 - Chrome AUR: `~/.config/chrome-flags.conf`
 
 Unquoted path. `$HOME` is not expanded in the file.
-
-> [!CAUTION]
-> Do Not use tilde character(`~`) or `$HOME` in the path
 
 ```sh
 --custom-devtools-frontend=file:///home/{YOUR_USERNAME}/.local/share/chromium/front_end
 ```
 
 </details>
+
+> [!CAUTION]
+> Do Not use tilde character(`~`) or `$HOME` in the path
 
 ### macOS
 
